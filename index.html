@@ -1,0 +1,1337 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="mon-fichier-modus" content="datei">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Mon fichier">
+<title>Mon fichier</title>
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px/1.4 system-ui,-apple-system,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<style id="app-css">
+/* Layout: eine Spalte wie ein Blatt im französischen Séyès-Heft, roter Rand links, grosse Touch-Flächen fürs iPad */
+:root {
+  --paper: #fdfdfb;
+  --sheet: #ffffff;
+  --ink: #1d2340;
+  --ink-soft: #5b6283;
+  --blue: #2747b0;
+  --blue-soft: #e6ebfa;
+  --margin: #d6455d;
+  --line: rgba(64, 110, 210, .10);
+  --line-strong: rgba(64, 110, 210, .20);
+  --border: #d9deee;
+  --good: #1f8a5b;
+  --good-soft: #def3e8;
+  --bad: #c23a4e;
+  --bad-soft: #fbe3e7;
+  --warn: #9a6400;
+  --warn-soft: #fbefd5;
+  --f1: #e0596c; --f2: #ec8a3c; --f3: #d6b11d; --f4: #6fb34a; --f5: #1f8a5b;
+  --shadow: 0 1px 0 rgba(29,35,64,.06), 0 6px 18px rgba(29,35,64,.07);
+  --font-display: "Grandstander", "Comic Sans MS", system-ui, sans-serif;
+  --font-body: "Andika", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --radius: 16px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #141a2e; --sheet: #1b2238; --ink: #eef1fb; --ink-soft: #a9b1d1;
+    --blue: #8ea8ff; --blue-soft: #263159; --margin: #ff7b8f;
+    --line: rgba(142, 168, 255, .07); --line-strong: rgba(142, 168, 255, .13);
+    --border: #2f3a5c; --good: #5fd39c; --good-soft: #173a2c; --bad: #ff8597; --bad-soft: #43202a;
+    --warn: #f3c060; --warn-soft: #3d3016;
+    --f1: #ff7b8f; --f2: #ffa35c; --f3: #f0cf45; --f4: #8fd46a; --f5: #5fd39c;
+    --shadow: 0 1px 0 rgba(0,0,0,.3), 0 6px 18px rgba(0,0,0,.25);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #141a2e; --sheet: #1b2238; --ink: #eef1fb; --ink-soft: #a9b1d1;
+  --blue: #8ea8ff; --blue-soft: #263159; --margin: #ff7b8f;
+  --line: rgba(142, 168, 255, .07); --line-strong: rgba(142, 168, 255, .13);
+  --border: #2f3a5c; --good: #5fd39c; --good-soft: #173a2c; --bad: #ff8597; --bad-soft: #43202a;
+  --warn: #f3c060; --warn-soft: #3d3016;
+  --f1: #ff7b8f; --f2: #ffa35c; --f3: #f0cf45; --f4: #8fd46a; --f5: #5fd39c;
+  --shadow: 0 1px 0 rgba(0,0,0,.3), 0 6px 18px rgba(0,0,0,.25);
+  color-scheme: dark;
+}
+html, body { min-height: 100%; }
+body {
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(var(--line-strong) 1px, transparent 1px),
+    linear-gradient(var(--line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line) 1px, transparent 1px);
+  background-size: 100% 32px, 100% 8px, 32px 100%;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 18px;
+  line-height: 1.45;
+  -webkit-tap-highlight-color: transparent;
+}
+* { box-sizing: border-box; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+h1, h2, h3 { font-family: var(--font-display); line-height: 1.15; text-wrap: balance; margin: 0; }
+h1 { font-size: 2rem; font-weight: 800; }
+h2 { font-size: 1.45rem; font-weight: 800; }
+h3 { font-size: 1.1rem; font-weight: 600; }
+p { margin: 0; }
+
+.top {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  background: var(--sheet); border-bottom: 2px solid var(--border);
+  padding-block: 10px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--sheet); }
+.top-in { max-width: 860px; margin: 0 auto; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.brand { font-family: var(--font-display); font-weight: 800; font-size: 1.4rem; color: var(--blue); display: flex; align-items: baseline; gap: 6px; background: none; border: 0; padding: 0; }
+.brand span { border-bottom: 3px solid var(--margin); line-height: 1; padding-bottom: 2px; }
+.top .spacer { flex: 1; }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 999px; background: var(--blue-soft); color: var(--blue); font-weight: 700; font-size: .95rem; }
+
+main {
+  max-width: 860px; margin: 0 auto;
+  padding-block: 20px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 18px;
+}
+.sheet {
+  background: var(--sheet); border: 1px solid var(--border); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 22px 22px 22px 34px; position: relative; min-width: 0;
+  display: grid; gap: 14px;
+}
+.sheet::before { content: ""; position: absolute; left: 18px; top: 0; bottom: 0; width: 2px; background: var(--margin); opacity: .55; }
+.muted { color: var(--ink-soft); }
+.small { font-size: .9rem; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.stack { display: grid; gap: 10px; }
+.center { text-align: center; justify-items: center; }
+
+.btn {
+  min-height: 52px; padding: 10px 20px; border-radius: 14px; border: 2px solid var(--blue);
+  background: var(--blue); color: var(--sheet); font-weight: 700; font-size: 1.05rem;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-align: center;
+}
+.btn.ghost { background: transparent; color: var(--blue); }
+.btn.soft { background: var(--blue-soft); color: var(--blue); border-color: transparent; }
+.btn.good { background: var(--good); border-color: var(--good); }
+.btn.bad { background: var(--bad); border-color: var(--bad); }
+.btn.small { min-height: 40px; padding: 6px 14px; font-size: .95rem; }
+.btn.wide { width: 100%; }
+.btn:disabled { opacity: .45; cursor: default; }
+.link { background: none; border: 0; color: var(--blue); text-decoration: underline; padding: 4px; font-weight: 700; }
+
+.field { display: grid; gap: 6px; }
+.field label { font-weight: 700; }
+.input {
+  min-height: 52px; padding: 10px 14px; border-radius: 12px; border: 2px solid var(--border);
+  background: var(--paper); font-size: 1.15rem; width: 100%;
+}
+.input:focus { border-color: var(--blue); outline: none; }
+.input.big { font-size: 1.6rem; text-align: center; letter-spacing: .06em; font-weight: 700; text-transform: uppercase; }
+textarea.input { min-height: 160px; font-size: 1rem; font-family: ui-monospace, Menlo, monospace; }
+.err { color: var(--bad); font-weight: 700; }
+.note { padding: 12px 14px; border-radius: 12px; background: var(--blue-soft); color: var(--ink); }
+.note.warn { background: var(--warn-soft); }
+
+.grid-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+.tile {
+  text-align: left; border: 2px solid var(--border); background: var(--sheet); border-radius: var(--radius);
+  padding: 16px; display: grid; gap: 6px; align-content: start; min-height: 110px; box-shadow: var(--shadow);
+}
+.tile:hover { border-color: var(--blue); }
+.tile .ico { width: 40px; height: 40px; border-radius: 12px; background: var(--blue-soft); color: var(--blue); display: grid; place-items: center; }
+.tile .ico svg { width: 24px; height: 24px; }
+.tile b { font-family: var(--font-display); font-size: 1.15rem; font-weight: 600; }
+.tile span { color: var(--ink-soft); font-size: .95rem; }
+.tile.main { border-color: var(--blue); background: var(--blue-soft); }
+
+.who-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; }
+.who { min-height: 80px; border-radius: 16px; border: 2px solid var(--border); background: var(--sheet); font-family: var(--font-display); font-size: 1.6rem; font-weight: 800; color: var(--blue); }
+
+.pics { display: grid; grid-template-columns: repeat(3, minmax(0, 96px)); gap: 12px; justify-content: center; }
+.pic { aspect-ratio: 1; max-width: 100%; border-radius: 18px; border: 2px solid var(--border); background: var(--sheet); font-size: 2.6rem; display: grid; place-items: center; position: relative; }
+.pic.on { border-color: var(--blue); background: var(--blue-soft); }
+.pic .n { position: absolute; top: 4px; right: 8px; font-size: .9rem; font-weight: 700; color: var(--blue); }
+.dots { display: flex; gap: 10px; justify-content: center; }
+.dots i { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--blue); }
+.dots i.on { background: var(--blue); }
+.shake { animation: shake .35s; }
+@keyframes shake { 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+
+/* Karteikasten mit 5 Fächern */
+.box { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; align-items: end; }
+.fach { display: grid; gap: 6px; justify-items: center; }
+.fach .well { width: 100%; height: 96px; border-radius: 10px 10px 6px 6px; border: 2px solid var(--border); background: var(--paper); display: flex; align-items: flex-end; overflow: hidden; }
+.fach .fill { width: 100%; border-radius: 6px 6px 0 0; transition: height .4s; }
+.fach .num { font-family: var(--font-display); font-weight: 800; font-size: 1.3rem; font-variant-numeric: tabular-nums; }
+.fach .lab { font-size: .8rem; color: var(--ink-soft); text-transform: uppercase; letter-spacing: .06em; }
+.c1 { background: var(--f1); } .c2 { background: var(--f2); } .c3 { background: var(--f3); } .c4 { background: var(--f4); } .c5 { background: var(--f5); }
+.pill { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: .85rem; font-weight: 700; color: #fff; }
+.pill.c3 { color: #1d2340; }
+
+.seg { display: inline-flex; border: 2px solid var(--border); border-radius: 14px; overflow: hidden; flex-wrap: wrap; }
+.seg button { border: 0; background: transparent; padding: 8px 14px; min-height: 44px; font-weight: 700; color: var(--ink-soft); }
+.seg button.on { background: var(--blue); color: var(--sheet); }
+
+/* Lernkarte */
+.card {
+  background: var(--sheet); border: 2px solid var(--border); border-radius: 22px; box-shadow: var(--shadow);
+  padding: 26px 20px; display: grid; gap: 14px; justify-items: center; text-align: center; min-height: 260px; align-content: center;
+}
+.card .emo { font-size: 4.2rem; line-height: 1; }
+.card .de { font-size: 1.6rem; font-weight: 700; }
+.card .fr { font-family: var(--font-display); font-size: 2.1rem; font-weight: 800; color: var(--blue); }
+.speak { width: 64px; height: 64px; border-radius: 50%; border: 2px solid var(--blue); background: var(--blue-soft); color: var(--blue); display: grid; place-items: center; }
+.speak.big { width: 96px; height: 96px; }
+.speak svg { width: 50%; height: 50%; }
+.accents { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+.accents button { min-width: 44px; min-height: 44px; border-radius: 10px; border: 2px solid var(--border); background: var(--paper); font-size: 1.2rem; font-weight: 700; }
+.feedback { border-radius: 16px; padding: 14px 16px; display: grid; gap: 6px; text-align: center; width: 100%; }
+.feedback.ok { background: var(--good-soft); color: var(--good); }
+.feedback.no { background: var(--bad-soft); color: var(--bad); }
+.feedback.accent { background: var(--warn-soft); color: var(--warn); }
+.feedback b { font-size: 1.2rem; }
+.feedback .sol { font-family: var(--font-display); font-size: 1.6rem; font-weight: 800; color: var(--ink); }
+.progress { height: 10px; border-radius: 999px; background: var(--blue-soft); overflow: hidden; }
+.progress i { display: block; height: 100%; background: var(--blue); border-radius: 999px; transition: width .3s; }
+
+.opts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; width: 100%; }
+.opt { min-height: 84px; border-radius: 16px; border: 2px solid var(--border); background: var(--sheet); padding: 8px; display: grid; gap: 2px; place-items: center; font-weight: 700; font-size: 1.1rem; }
+.opt .e { font-size: 1.9rem; line-height: 1; }
+.opt.ok { border-color: var(--good); background: var(--good-soft); color: var(--good); }
+.opt.no { border-color: var(--bad); background: var(--bad-soft); color: var(--bad); }
+.opt:disabled { cursor: default; }
+
+.mem { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.mcard { aspect-ratio: 4 / 3; border-radius: 14px; border: 2px solid var(--border); background: var(--blue); color: var(--sheet); font-weight: 700; padding: 6px; display: grid; place-items: center; font-size: 1rem; line-height: 1.15; overflow-wrap: anywhere; }
+.mcard.open { background: var(--sheet); color: var(--ink); }
+.mcard.open.fr { color: var(--blue); font-family: var(--font-display); }
+.mcard.done { background: var(--good-soft); color: var(--good); border-color: var(--good); }
+.mcard .e { font-size: 1.6rem; display: block; }
+.mcard .back { font-family: var(--font-display); font-size: 1.6rem; opacity: .9; }
+
+.big-num { font-family: var(--font-display); font-size: 3rem; font-weight: 800; color: var(--blue); font-variant-numeric: tabular-nums; line-height: 1; }
+.hs { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.hs td, .hs th { padding: 8px 10px; border-bottom: 1px solid var(--border); text-align: left; }
+.hs th { font-size: .8rem; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-soft); }
+.hs td.r { text-align: right; font-weight: 700; }
+.hs tr.me td { background: var(--blue-soft); }
+.scroll { overflow-x: auto; }
+
+.tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.tabs button { border: 2px solid var(--border); background: var(--sheet); border-radius: 12px; padding: 8px 14px; min-height: 44px; font-weight: 700; color: var(--ink-soft); }
+.tabs button.on { border-color: var(--blue); color: var(--blue); background: var(--blue-soft); }
+.edit td { padding: 4px; }
+.edit input { min-height: 42px; font-size: 1rem; padding: 6px 10px; }
+.edit td.emo-col { width: 72px; }
+.edit td.del { width: 48px; }
+.x { width: 40px; height: 40px; border-radius: 10px; border: 2px solid var(--border); background: var(--paper); color: var(--bad); font-weight: 700; }
+.badge { font-size: .78rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--warn-soft); color: var(--warn); }
+.badge.pub { background: var(--good-soft); color: var(--good); }
+
+/* Duell: geteilter Bildschirm, obere Hälfte gedreht */
+.duel { position: fixed; inset: 0; z-index: 20; background: var(--paper); display: grid; grid-template-rows: 1fr auto 1fr; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+.half { display: grid; gap: 10px; align-content: center; justify-items: center; padding: 12px max(16px, env(safe-area-inset-left, 0px)) 12px max(16px, env(safe-area-inset-right, 0px)); min-height: 0; }
+.half.p2 { transform: rotate(180deg); }
+.half .who-l { font-family: var(--font-display); font-weight: 800; font-size: 1.1rem; }
+.half .fr { font-family: var(--font-display); font-size: 1.8rem; font-weight: 800; color: var(--blue); }
+.half .opts { max-width: 560px; }
+.half .opt { min-height: 64px; }
+.half.won { background: var(--good-soft); }
+.half.lock .opts { opacity: .4; }
+.mid { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px max(16px, env(safe-area-inset-left, 0px)); background: var(--sheet); border-block: 2px solid var(--border); }
+.mid .score { font-family: var(--font-display); font-weight: 800; font-size: 1.3rem; font-variant-numeric: tabular-nums; }
+
+.stars { font-size: 2.4rem; letter-spacing: 6px; color: var(--f3); }
+.pop { animation: pop .35s ease-out; }
+@keyframes pop { from { transform: scale(.92); } to { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { .pop, .shake { animation: none; } .fach .fill, .progress i { transition: none; } }
+@media (max-width: 520px) {
+  body { font-size: 17px; }
+  .sheet { padding: 18px 16px 18px 28px; }
+  .sheet::before { left: 13px; }
+  .mem { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .card .fr { font-size: 1.7rem; }
+  .half .opt { min-height: 56px; font-size: 1rem; }
+}
+</style>
+</head>
+<body>
+<script type="application/json" id="kartei-daten">{"version": 1, "pinHash": "fde7e897e85047aff1e8fc5beebf94adc8940892107d03d229c7ec05598bfd67", "classes": [{"code": "3E", "name": "z"}], "decks": [{"id": "dtgdtk5", "title": "MF3 Alphabet und Wörter", "words": [{"id": "w18o2kum", "fr": "l'alphabet", "de": "das Alphabet", "img": "🔤"}, {"id": "w1s5fl7i", "fr": "chatouiller", "de": "kitzeln", "img": ""}, {"id": "w1qpk24a", "fr": "une collection", "de": "eine Sammlung", "img": ""}, {"id": "wrfwf9b", "fr": "collectionner", "de": "sammeln", "img": ""}, {"id": "wr57baa", "fr": "se comprendre", "de": "einander verstehen", "img": ""}, {"id": "wbhqk9y", "fr": "une lettre", "de": "ein Buchstabe", "img": "🅰️"}, {"id": "waj0cu3", "fr": "manger", "de": "essen, fressen", "img": "🍽️"}, {"id": "wqul1tm", "fr": "le monstre", "de": "das Monster", "img": "👾"}, {"id": "w2lt66w", "fr": "un mot", "de": "das Wort", "img": ""}, {"id": "wdrk22n", "fr": "parler", "de": "sprechen", "img": "🗣️"}, {"id": "wdd1112", "fr": "Voici un/une", "de": "Da ist ein/eine", "img": ""}, {"id": "w1ynj3vv", "fr": "Tu as un/une?", "de": "Hast du ein/eine?", "img": ""}, {"id": "wd4r1cp", "fr": "Non, désolé.", "de": "Nein, leider nicht.", "img": ""}, {"id": "w1q98482", "fr": "Non, pas de chance!", "de": "Nein, du hast aber Pech!", "img": ""}]}, {"id": "d17abe14", "title": "MF3 Zahlen 1 bis 20", "words": [{"id": "wykt59x", "fr": "un", "de": "1", "img": ""}, {"id": "w1wyjf61", "fr": "deux", "de": "2", "img": ""}, {"id": "w1wklg9x", "fr": "trois", "de": "3", "img": ""}, {"id": "w1pjxcsn", "fr": "quatre", "de": "4", "img": ""}, {"id": "w1wdwqdd", "fr": "cinq", "de": "5", "img": ""}, {"id": "w4je8az", "fr": "six", "de": "6", "img": ""}, {"id": "w7mtj4k", "fr": "sept", "de": "7", "img": ""}, {"id": "wtnyc3", "fr": "huit", "de": "8", "img": ""}, {"id": "w4ef0p4", "fr": "neuf", "de": "9", "img": ""}, {"id": "w1x1fg1z", "fr": "dix", "de": "10", "img": ""}, {"id": "wufnr3z", "fr": "onze", "de": "11", "img": ""}, {"id": "who4xyj", "fr": "douze", "de": "12", "img": ""}, {"id": "wl6bdiw", "fr": "treize", "de": "13", "img": ""}, {"id": "wjjdue9", "fr": "quatorze", "de": "14", "img": ""}, {"id": "w1vhapkz", "fr": "quinze", "de": "15", "img": ""}, {"id": "w1xay03s", "fr": "seize", "de": "16", "img": ""}, {"id": "wnvi9o7", "fr": "dix-sept", "de": "17", "img": ""}, {"id": "wc8qdh2", "fr": "dix-huit", "de": "18", "img": ""}, {"id": "w1n8fhez", "fr": "dix-neuf", "de": "19", "img": ""}, {"id": "w1y58xe3", "fr": "vingt", "de": "20", "img": ""}]}, {"id": "da3ykpr", "title": "MF3 Sachen von A bis Z", "words": [{"id": "w1sfrdev", "fr": "un abricot", "de": "eine Aprikose", "img": ""}, {"id": "w2lmnqr", "fr": "un ballon", "de": "ein Ballon, ein Ball", "img": "🎈"}, {"id": "w18cyau5", "fr": "un bouquet", "de": "ein Blumenstrauss", "img": "💐"}, {"id": "w34p1h4", "fr": "un éléphant", "de": "ein Elefant", "img": "🐘"}, {"id": "w2k6jfy", "fr": "une glace", "de": "ein Spiegel, ein Glace", "img": "🍦"}, {"id": "wbvnd76", "fr": "un hélicoptère", "de": "ein Helikopter", "img": "🚁"}, {"id": "w1w0xqso", "fr": "une mandarine", "de": "eine Mandarine", "img": "🍊"}, {"id": "w1u3ch15", "fr": "un microphone", "de": "ein Mikrofon", "img": "🎤"}, {"id": "w1b7opxt", "fr": "une panthère", "de": "ein Panther", "img": "🐆"}, {"id": "wld5tlz", "fr": "une photo", "de": "ein Foto", "img": "📷"}, {"id": "wwusmed", "fr": "un pirate", "de": "ein Pirat", "img": "🏴‍☠️"}, {"id": "w1lt4zfz", "fr": "un porte-monnaie", "de": "ein Portemonnaie", "img": "👛"}, {"id": "w1ylgnes", "fr": "un pyjama", "de": "ein Pyjama", "img": ""}, {"id": "wrieuwa", "fr": "une tasse", "de": "eine Tasse", "img": "☕"}, {"id": "w19wym72", "fr": "une tomate", "de": "eine Tomate", "img": "🍅"}, {"id": "w18uz38x", "fr": "un tracteur", "de": "ein Traktor", "img": "🚜"}, {"id": "wjyu8c", "fr": "une trottinette", "de": "ein Trottinett", "img": "🛴"}, {"id": "w1i7j6y8", "fr": "un vélo", "de": "ein Velo, ein Fahrrad", "img": "🚲"}, {"id": "wqvp91p", "fr": "l'âne", "de": "der Esel", "img": "🫏"}, {"id": "wqao390", "fr": "le gilet", "de": "das Gilet", "img": "🦺"}, {"id": "w1btphrg", "fr": "le moustique", "de": "die Mücke", "img": "🦟"}, {"id": "w1j0j9wm", "fr": "le pays", "de": "das Land", "img": ""}, {"id": "whqd37a", "fr": "le roi", "de": "der König", "img": "🤴"}, {"id": "w19b3j2p", "fr": "le xylophone", "de": "das Xylophon", "img": ""}]}, {"id": "d19gzdcg", "title": "MF3 Der Körper", "words": [{"id": "w1ymy6o", "fr": "la tête", "de": "der Kopf", "img": ""}, {"id": "w2x0khc", "fr": "les cheveux", "de": "die Haare", "img": "💇"}, {"id": "wb5k128", "fr": "la main", "de": "die Hand", "img": "✋"}, {"id": "w1ntfgsw", "fr": "le pied", "de": "der Fuss", "img": "🦶"}, {"id": "wk7kbv7", "fr": "la bouche", "de": "der Mund", "img": "👄"}, {"id": "w109jisc", "fr": "le cou", "de": "der Hals", "img": ""}, {"id": "w1rbusky", "fr": "les yeux", "de": "die Augen", "img": "👀"}, {"id": "w1xa7a5e", "fr": "le dos", "de": "der Rücken", "img": ""}, {"id": "w14bs4k8", "fr": "le nez", "de": "die Nase", "img": "👃"}, {"id": "wfvi9p1", "fr": "le bras", "de": "der Arm", "img": "💪"}, {"id": "wykbv7n", "fr": "la jambe", "de": "das Bein", "img": "🦵"}, {"id": "w19mg6s2", "fr": "les oreilles", "de": "die Ohren", "img": "👂"}, {"id": "wv7hbrj", "fr": "le genou", "de": "das Knie", "img": ""}]}, {"id": "db3r0hk", "title": "MF3 Tiere", "words": [{"id": "w1szux71", "fr": "la mouche", "de": "die Fliege", "img": "🪰"}, {"id": "w1wcopcf", "fr": "la vache", "de": "die Kuh", "img": "🐮"}, {"id": "w1e6rdxq", "fr": "la bique", "de": "die Ziege (umgangssprachlich)", "img": "🐐"}, {"id": "w1sqt5xp", "fr": "la chèvre", "de": "die Geiss, die Ziege", "img": "🐐"}, {"id": "w1mmy09v", "fr": "le chat", "de": "die Katze", "img": "🐱"}, {"id": "w1rsj8z9", "fr": "le cochon", "de": "das Schwein", "img": "🐷"}, {"id": "wn5gnyb", "fr": "l'écureuil", "de": "das Eichhörnchen", "img": "🐿️"}, {"id": "w1potpws", "fr": "l'oie", "de": "die Gans", "img": "🪿"}, {"id": "wvg0uds", "fr": "le pingouin", "de": "der Pinguin", "img": "🐧"}, {"id": "wi3v7b1", "fr": "le crocodile", "de": "das Krokodil", "img": "🐊"}, {"id": "w1wurlst", "fr": "le lion", "de": "der Löwe", "img": "🦁"}, {"id": "w1mdaa1n", "fr": "la souris", "de": "die Maus", "img": "🐭"}, {"id": "wgd0n79", "fr": "le singe", "de": "der Affe", "img": "🐒"}, {"id": "w14dvrc2", "fr": "la girafe", "de": "die Giraffe", "img": "🦒"}, {"id": "w1koxctq", "fr": "le cheval", "de": "das Pferd", "img": "🐴"}, {"id": "w1r91j34", "fr": "grimper", "de": "klettern", "img": "🧗"}, {"id": "wsjptfm", "fr": "les escaliers", "de": "die Treppe", "img": "🪜"}, {"id": "w1gtlddd", "fr": "le gratte-ciel", "de": "der Wolkenkratzer", "img": "🏙️"}]}, {"id": "dpslsx0", "title": "MF3 Wochentage", "words": [{"id": "w7p3277", "fr": "lundi", "de": "Montag", "img": "📅"}, {"id": "w16xa271", "fr": "mardi", "de": "Dienstag", "img": "📅"}, {"id": "w1y9s0yj", "fr": "mercredi", "de": "Mittwoch", "img": "📅"}, {"id": "w74do3r", "fr": "jeudi", "de": "Donnerstag", "img": "📅"}, {"id": "w14riolw", "fr": "vendredi", "de": "Freitag", "img": "📅"}, {"id": "w1pa7544", "fr": "samedi", "de": "Samstag", "img": "📅"}, {"id": "wu8ld6c", "fr": "dimanche", "de": "Sonntag", "img": "📅"}]}, {"id": "d10gettx", "title": "MF3 Über mich", "words": [{"id": "wg10j3w", "fr": "je m'appelle", "de": "ich heisse", "img": ""}, {"id": "wpnvwv7", "fr": "le chien", "de": "der Hund", "img": "🐶"}, {"id": "wff3o9y", "fr": "J'ai ... ans.", "de": "Ich bin ... Jahre alt.", "img": ""}, {"id": "w3e99ay", "fr": "Je parle français.", "de": "Ich spreche Französisch.", "img": "🗣️"}, {"id": "w13rs6lw", "fr": "J'habite", "de": "Ich wohne", "img": "🏠"}, {"id": "w10bau5z", "fr": "J'aime", "de": "Ich mag", "img": "❤️"}, {"id": "w6vkaj2", "fr": "J'aime moins", "de": "Ich mag weniger", "img": ""}, {"id": "w18g4ulk", "fr": "le frère", "de": "der Bruder", "img": "👦"}, {"id": "wau72v9", "fr": "la sœur", "de": "die Schwester", "img": "👧"}, {"id": "w1hl6yip", "fr": "le copain/la copine", "de": "der Freund/die Freundin", "img": "🧑‍🤝‍🧑"}, {"id": "w1ib118v", "fr": "la boule", "de": "die Kugel", "img": "🔴"}, {"id": "w1qp330h", "fr": "l'échelle", "de": "die Leiter", "img": "🪜"}, {"id": "w5073zy", "fr": "le diabolo", "de": "das Diabolo", "img": ""}, {"id": "wvhk3a5", "fr": "le spectacle", "de": "die Vorstellung, die Aufführung", "img": "🎪"}, {"id": "w219r76", "fr": "le public", "de": "das Publikum", "img": "👏"}, {"id": "wlplhkn", "fr": "l'entraînement", "de": "das Training", "img": ""}]}, {"id": "d7uie2k", "title": "MF3 Im Schulzimmer", "words": [{"id": "w1cjxo18", "fr": "un classeur", "de": "ein Ordner", "img": "🗂️"}, {"id": "w1ns5r0y", "fr": "un crayon", "de": "ein Bleistift", "img": "✏️"}, {"id": "wirqq1l", "fr": "un crayon de couleur", "de": "ein Farbstift", "img": "🖍️"}, {"id": "w1810xyb", "fr": "un stylo", "de": "ein Füller, ein Kugelschreiber", "img": "🖊️"}, {"id": "w95mvav", "fr": "une gomme", "de": "ein Gummi, ein Radiergummi", "img": ""}, {"id": "wzcf0cs", "fr": "un ordinateur", "de": "ein Computer", "img": "💻"}, {"id": "w7fukjm", "fr": "une chaise", "de": "ein Stuhl", "img": "🪑"}, {"id": "wtn81u4", "fr": "Il va à l'école.", "de": "Er geht zur Schule.", "img": "🏫"}, {"id": "w1yli65f", "fr": "Elle va à l'école.", "de": "Sie geht zur Schule.", "img": "🏫"}, {"id": "wfvpxo3", "fr": "le monde", "de": "die Welt", "img": "🌍"}, {"id": "w1jt6w6k", "fr": "un continent", "de": "ein Kontinent", "img": "🗺️"}, {"id": "w41es79", "fr": "C'est un/une", "de": "Das ist ein/eine", "img": ""}, {"id": "w2vsxr3", "fr": "Je vois un/une/des", "de": "Ich sehe ein/eine/viele", "img": "👀"}, {"id": "wz0qu0e", "fr": "C'est peut-être un/une", "de": "Das ist vielleicht ein/eine", "img": ""}, {"id": "w107sia7", "fr": "Dans la classe, il y a un/une/des", "de": "Im Klassenzimmer hat es ein/eine/viele", "img": ""}, {"id": "wromub", "fr": "Regarde. Regardez.", "de": "Schau. Schaut.", "img": "👀"}, {"id": "wdv8xgw", "fr": "le tableau noir", "de": "die Wandtafel", "img": ""}, {"id": "wjdbozp", "fr": "l'horaire", "de": "der Stundenplan", "img": "🗓️"}, {"id": "w18r5ci6", "fr": "le carnet", "de": "das Heft", "img": "📓"}, {"id": "wnpqj7w", "fr": "la table", "de": "der Tisch", "img": ""}, {"id": "w1c2b972", "fr": "le livre", "de": "das Buch", "img": "📖"}, {"id": "w1w6im3l", "fr": "l'éponge", "de": "der Schwamm", "img": "🧽"}, {"id": "wtup9vn", "fr": "la feuille", "de": "das Blatt", "img": "📄"}, {"id": "w1tz0agz", "fr": "les ciseaux", "de": "die Schere", "img": "✂️"}, {"id": "w1qsnpc8", "fr": "l'armoire", "de": "der Schrank", "img": ""}, {"id": "w1mr79g1", "fr": "la porte", "de": "die Türe", "img": "🚪"}, {"id": "w1vb9g0m", "fr": "l'élève", "de": "der Schüler, die Schülerin", "img": "🧒"}, {"id": "wzbklti", "fr": "l'école", "de": "die Schule", "img": "🏫"}, {"id": "w16py16d", "fr": "la poubelle", "de": "der Abfalleimer", "img": "🗑️"}, {"id": "w1fg25hu", "fr": "le taille-crayon", "de": "der Spitzer", "img": ""}, {"id": "wf5zsrx", "fr": "la règle", "de": "das Lineal", "img": "📏"}, {"id": "w19cbcc7", "fr": "le feutre", "de": "der Filzstift", "img": ""}, {"id": "w1568vm", "fr": "la trousse", "de": "das Etui", "img": ""}, {"id": "w18ty36g", "fr": "la craie", "de": "die Kreide", "img": ""}, {"id": "wf5dp6d", "fr": "l'imprimante", "de": "der Drucker", "img": "🖨️"}, {"id": "wh09x51", "fr": "l'effaceur", "de": "der Tintenkiller", "img": ""}, {"id": "w1deqmiv", "fr": "la flûte", "de": "die Flöte", "img": "🪈"}, {"id": "wyotef4", "fr": "la salle de classe", "de": "das Klassenzimmer", "img": ""}, {"id": "wgr1pg7", "fr": "le savon", "de": "die Seife", "img": "🧼"}, {"id": "ww9c67f", "fr": "la fenêtre", "de": "das Fenster", "img": "🪟"}]}, {"id": "d60axd0", "title": "MF3 Il und elle", "words": [{"id": "w111l0tp", "fr": "Il n'aime pas", "de": "Er mag nicht", "img": ""}, {"id": "wfmvjdm", "fr": "Il adore", "de": "Er mag furchtbar gern", "img": "😍"}, {"id": "w190cej8", "fr": "Il sait", "de": "Er weiss, er kann", "img": ""}, {"id": "wxbkzwo", "fr": "Elle a un/une", "de": "Sie hat ein/eine", "img": ""}, {"id": "w1umnx4w", "fr": "Elle est", "de": "Sie ist", "img": ""}, {"id": "w1yytsvp", "fr": "Elle fait", "de": "Sie macht", "img": ""}]}, {"id": "dt5ghpg", "title": "MF4 Wiederholung aus MF3", "words": [{"id": "wbvnd76", "fr": "un hélicoptère", "de": "ein Helikopter", "img": "🚁"}, {"id": "w19wym72", "fr": "une tomate", "de": "eine Tomate", "img": "🍅"}, {"id": "w1ylgnes", "fr": "un pyjama", "de": "ein Pyjama", "img": ""}, {"id": "w18cyau5", "fr": "un bouquet", "de": "ein Blumenstrauss", "img": "💐"}, {"id": "wwusmed", "fr": "un pirate", "de": "ein Pirat", "img": "🏴‍☠️"}, {"id": "w1u3ch15", "fr": "un microphone", "de": "ein Mikrofon", "img": "🎤"}, {"id": "w18uz38x", "fr": "un tracteur", "de": "ein Traktor", "img": "🚜"}, {"id": "wrieuwa", "fr": "une tasse", "de": "eine Tasse", "img": "☕"}, {"id": "wsvkfbf", "fr": "une glace", "de": "ein Eis, eine Glace", "img": "🍦"}, {"id": "w1w0xqso", "fr": "une mandarine", "de": "eine Mandarine", "img": "🍊"}, {"id": "w1b7opxt", "fr": "une panthère", "de": "ein Panther", "img": "🐆"}, {"id": "w34p1h4", "fr": "un éléphant", "de": "ein Elefant", "img": "🐘"}, {"id": "wwlpo7y", "fr": "Je parle français (parler)", "de": "Ich spreche Französisch (sprechen)", "img": "🗣️"}, {"id": "wx3fhsc", "fr": "J'aime... (aimer)", "de": "Ich habe ... gern (gern haben)", "img": "❤️"}, {"id": "wt6c3c", "fr": "J'habite... (habiter)", "de": "Ich wohne ... (wohnen)", "img": "🏠"}, {"id": "w7ixfl0", "fr": "Je m'appelle... (s'appeler)", "de": "Ich heisse ... (heissen)", "img": ""}, {"id": "w1s4s7i4", "fr": "J'ai... ans (avoir)", "de": "Ich bin ... Jahre alt", "img": ""}, {"id": "wv7p7k8", "fr": "J'aime moins... (aimer)", "de": "Ich habe ... weniger gern", "img": ""}, {"id": "wqao390", "fr": "le gilet", "de": "das Gilet", "img": "🦺"}, {"id": "wsdnhs1", "fr": "le copain/la copine", "de": "der Freund/die Freundin, der Kollege/die Kollegin", "img": "🧑‍🤝‍🧑"}, {"id": "w1j0j9wm", "fr": "le pays", "de": "das Land", "img": ""}, {"id": "wau72v9", "fr": "la sœur", "de": "die Schwester", "img": "👧"}, {"id": "w18g4ulk", "fr": "le frère", "de": "der Bruder", "img": "👦"}, {"id": "w1btphrg", "fr": "le moustique", "de": "die Mücke", "img": "🦟"}, {"id": "wqvp91p", "fr": "l'âne", "de": "der Esel", "img": "🫏"}, {"id": "w18o2kum", "fr": "l'alphabet", "de": "das Alphabet", "img": "🔤"}, {"id": "w1pn3bhb", "fr": "le xylophone", "de": "das Xylofon", "img": ""}, {"id": "wrfwf9b", "fr": "collectionner", "de": "sammeln", "img": ""}, {"id": "w1x3lkgp", "fr": "manger", "de": "essen", "img": "🍽️"}, {"id": "wr57baa", "fr": "se comprendre", "de": "einander verstehen", "img": ""}, {"id": "wdrk22n", "fr": "parler", "de": "sprechen", "img": "🗣️"}, {"id": "w1s5fl7i", "fr": "chatouiller", "de": "kitzeln", "img": ""}, {"id": "wld5tlz", "fr": "une photo", "de": "ein Foto", "img": "📷"}, {"id": "w1qpk24a", "fr": "une collection", "de": "eine Sammlung", "img": ""}, {"id": "w8fyblm", "fr": "un porte-monnaie", "de": "ein Portemonnaie, eine Geldbörse", "img": "👛"}, {"id": "w1cct8ab", "fr": "un ballon", "de": "ein Ball, ein Ballon", "img": "🎈"}, {"id": "whqd37a", "fr": "le roi", "de": "der König", "img": "🤴"}, {"id": "wbhqk9y", "fr": "une lettre", "de": "ein Buchstabe", "img": "🅰️"}, {"id": "wmp4qqk", "fr": "un mot", "de": "ein Wort", "img": ""}]}, {"id": "d2oxdx1", "title": "MF4 Sachen und Dinge", "words": [{"id": "w1yecfuo", "fr": "une balle", "de": "ein Ball", "img": "⚾"}, {"id": "wdwnx7", "fr": "un kilomètre", "de": "ein Kilometer", "img": ""}, {"id": "w1wurlst", "fr": "le lion", "de": "der Löwe", "img": "🦁"}, {"id": "w1mlu73j", "fr": "un yoyo", "de": "ein Jo-Jo", "img": "🪀"}, {"id": "w6k0u", "fr": "les parents", "de": "die Eltern", "img": "👪"}, {"id": "wo2izqq", "fr": "écrire", "de": "schreiben", "img": "✍️"}, {"id": "w35hphp", "fr": "un million", "de": "eine Million", "img": ""}, {"id": "wilfe", "fr": "le dessert", "de": "das Dessert, der Nachtisch", "img": "🍰"}, {"id": "wfcqbv7", "fr": "une cravate", "de": "eine Krawatte", "img": "👔"}, {"id": "w14sqim8", "fr": "une galaxie", "de": "eine Galaxie", "img": "🌌"}, {"id": "w1m5w2fb", "fr": "un océan", "de": "ein Ozean", "img": "🌊"}, {"id": "w1rny2gy", "fr": "le lit", "de": "das Bett", "img": "🛏️"}, {"id": "wqul1tm", "fr": "le monstre", "de": "das Monster", "img": "👾"}, {"id": "w17zxfnz", "fr": "la pomme", "de": "der Apfel", "img": "🍎"}, {"id": "w1sfrdev", "fr": "un abricot", "de": "eine Aprikose", "img": ""}, {"id": "wzpz830", "fr": "le pull-over", "de": "der Pullover", "img": ""}]}, {"id": "d1hcvrqm", "title": "MF4 Tun und wie", "words": [{"id": "w1xtau6q", "fr": "dessiner", "de": "zeichnen", "img": "🖍️"}, {"id": "w11rhall", "fr": "le mieux", "de": "am besten", "img": ""}, {"id": "wg644y4", "fr": "le guépard", "de": "der Gepard", "img": "🐆"}, {"id": "wclw92b", "fr": "le tigre", "de": "der Tiger", "img": "🐅"}, {"id": "w1us2tn", "fr": "ouvrir", "de": "öffnen", "img": ""}, {"id": "wy7ik9r", "fr": "le canapé", "de": "das Sofa", "img": "🛋️"}, {"id": "w3pbq", "fr": "jouer", "de": "spielen", "img": ""}, {"id": "w30gfp2", "fr": "un chien", "de": "ein Hund", "img": "🐶"}, {"id": "wvpy1tw", "fr": "un chat", "de": "eine Katze", "img": "🐱"}, {"id": "w1k1nsxp", "fr": "un camion", "de": "ein Lastwagen", "img": "🚚"}, {"id": "wum0qis", "fr": "lire", "de": "lesen", "img": "📖"}, {"id": "wz3sc81", "fr": "travailler", "de": "arbeiten", "img": ""}, {"id": "w1imyfws", "fr": "suisse-allemand", "de": "schweizerdeutsch", "img": "🇨🇭"}, {"id": "wqfl9jy", "fr": "le cirque", "de": "der Zirkus", "img": "🎪"}, {"id": "w3sm9ol", "fr": "difficile", "de": "schwierig", "img": ""}, {"id": "w1m1yyj7", "fr": "facile", "de": "einfach", "img": ""}, {"id": "wss7as9", "fr": "s'entraîner", "de": "trainieren", "img": ""}]}, {"id": "dd0qo3m", "title": "MF4 Im Zirkus", "words": [{"id": "w11k0fua", "fr": "l'avion", "de": "das Flugzeug", "img": "✈️"}, {"id": "w1koxctq", "fr": "le cheval", "de": "das Pferd", "img": "🐴"}, {"id": "wrt9lca", "fr": "présenter", "de": "präsentieren, vorstellen", "img": ""}, {"id": "wvbztcv", "fr": "Choisissez une lettre. (choisir)", "de": "Wählt einen Buchstaben. (wählen)", "img": ""}, {"id": "wzkxodf", "fr": "Il a déjà 14 ans.", "de": "Er ist schon 14 Jahre alt.", "img": ""}, {"id": "w1imtxg4", "fr": "dangereux", "de": "gefährlich", "img": "⚠️"}, {"id": "w8s51jy", "fr": "souvent", "de": "oft", "img": ""}, {"id": "wke70lk", "fr": "fou", "de": "verrückt", "img": "🤪"}, {"id": "wyzzlnj", "fr": "un secret", "de": "ein Geheimnis", "img": "🤫"}, {"id": "w1njmao", "fr": "compter", "de": "zählen", "img": "🔢"}, {"id": "wwdivb4", "fr": "ce que je préfère (préférer)", "de": "was ich am liebsten mag (lieber mögen)", "img": ""}, {"id": "w13l7j3t", "fr": "à deux", "de": "zu zweit", "img": ""}, {"id": "w1mgqmve", "fr": "je m'entraîne...", "de": "ich trainiere ...", "img": ""}, {"id": "wurbeq2", "fr": "avec", "de": "mit", "img": ""}, {"id": "w1vmpelc", "fr": "sans", "de": "ohne", "img": ""}, {"id": "w152vo3i", "fr": "le prestidigitateur", "de": "der Zauberkünstler", "img": "🎩"}, {"id": "w2skp2o", "fr": "nouveaux", "de": "neu (Mehrzahl)", "img": ""}, {"id": "w1jomc3z", "fr": "un village", "de": "ein Dorf", "img": "🏘️"}, {"id": "w1kfum12", "fr": "une ville", "de": "eine Stadt", "img": "🏙️"}, {"id": "w4ynlg8", "fr": "la caravane", "de": "der Wohnwagen", "img": ""}, {"id": "wlplhkn", "fr": "l'entraînement", "de": "das Training", "img": ""}, {"id": "w219r76", "fr": "le public", "de": "das Publikum", "img": "👏"}, {"id": "w1y35hb1", "fr": "le spectacle", "de": "die Vorstellung", "img": "🎪"}, {"id": "w170nwbp", "fr": "le chapiteau", "de": "das Zirkuszelt", "img": "🎪"}]}, {"id": "dngjgy8", "title": "MF4 Anweisungen im Unterricht", "words": [{"id": "w1rt5ml5", "fr": "Regardez les dessins. (regarder)", "de": "Schaut die Zeichnungen an. (anschauen)", "img": ""}, {"id": "w1fnzzrs", "fr": "Présentez les mots en plénum. (présenter)", "de": "Präsentiert die Wörter im Plenum. (präsentieren)", "img": ""}, {"id": "w9uuu78", "fr": "Lisez les mots. (lire)", "de": "Lest die Wörter. (lesen)", "img": ""}, {"id": "wjynrd3", "fr": "Écoutez l'histoire. (écouter)", "de": "Hört die Geschichte. (hören)", "img": ""}, {"id": "w1dth08v", "fr": "écouter", "de": "hören", "img": "👂"}, {"id": "wsqw1s", "fr": "Parlez français. (parler)", "de": "Sprecht Französisch. (sprechen)", "img": ""}, {"id": "w1bsfikr", "fr": "chercher", "de": "suchen", "img": "🔍"}, {"id": "w6aqlcj", "fr": "Cherchez des verbes dans le dictionnaire. (chercher)", "de": "Sucht Verben im Wörterbuch. (suchen)", "img": ""}, {"id": "w14jkcof", "fr": "le dictionnaire", "de": "das Wörterbuch", "img": "📕"}, {"id": "worq2ra", "fr": "regarder", "de": "schauen, anschauen", "img": "👀"}, {"id": "wxhis6j", "fr": "Ouvrez le dictionnaire. (ouvrir)", "de": "Öffnet das Wörterbuch. (öffnen)", "img": ""}, {"id": "wlwvc40", "fr": "Écrivez le mot en français. (écrire)", "de": "Schreibt das Wort auf Französisch. (schreiben)", "img": ""}, {"id": "wpza87o", "fr": "choisir", "de": "wählen", "img": ""}, {"id": "wt5x7ed", "fr": "Jouez au «Jeu des familles». (jouer)", "de": "Spielt das Familienspiel. (spielen)", "img": ""}]}, {"id": "d1xiwv4e", "title": "MF4 Sport und Maschinen", "words": [{"id": "wqbvsk2", "fr": "la musique", "de": "die Musik", "img": "🎵"}, {"id": "w1ulcned", "fr": "une planète", "de": "ein Planet", "img": "🪐"}, {"id": "wxuxpks", "fr": "le football", "de": "der Fussball", "img": "⚽"}, {"id": "wwopqh3", "fr": "le hockey sur glace", "de": "das Eishockey", "img": "🏒"}, {"id": "w1d35xe4", "fr": "le tennis", "de": "das Tennis", "img": "🎾"}, {"id": "w12yioq4", "fr": "un athlète", "de": "ein Athlet", "img": "🏃"}, {"id": "w16rbrbu", "fr": "appuyer", "de": "drücken", "img": ""}, {"id": "w19joopn", "fr": "brancher", "de": "anschliessen, einstecken", "img": "🔌"}, {"id": "wc8qnj1", "fr": "la machine", "de": "die Maschine", "img": "⚙️"}, {"id": "w4lxpj3", "fr": "frapper", "de": "schlagen, klatschen", "img": "👏"}, {"id": "w1eo94vt", "fr": "ultra rapide", "de": "sehr schnell", "img": ""}, {"id": "w1c4s6la", "fr": "il faut...", "de": "man muss ...", "img": ""}, {"id": "w1l8eanp", "fr": "le casque", "de": "der Helm", "img": "⛑️"}, {"id": "wuipbkk", "fr": "faire", "de": "machen", "img": ""}, {"id": "w16gvap1", "fr": "mettre", "de": "stellen, legen, setzen", "img": ""}]}, {"id": "d17dple5", "title": "MF4 Die Maschine", "words": [{"id": "w1tmreic", "fr": "voir", "de": "sehen", "img": "👀"}, {"id": "wbghavg", "fr": "la chambre", "de": "das Zimmer", "img": "🛏️"}, {"id": "wtfuvbt", "fr": "invisible", "de": "unsichtbar", "img": ""}, {"id": "wzz4o44", "fr": "sur le bouton", "de": "auf den Knopf", "img": "🔘"}, {"id": "w1xxc79j", "fr": "ranger", "de": "aufräumen", "img": ""}, {"id": "wch2avz", "fr": "les images", "de": "die Bilder", "img": "🖼️"}, {"id": "w1ldt8fn", "fr": "devenir", "de": "werden", "img": ""}, {"id": "w12sdhnb", "fr": "la machine sert à...", "de": "die Maschine dient dazu ...", "img": "⚙️"}, {"id": "wzein7h", "fr": "les devoirs", "de": "die Hausaufgaben", "img": "📝"}, {"id": "wsw182j", "fr": "dans le microphone", "de": "ins Mikrofon", "img": "🎤"}, {"id": "w127u47f", "fr": "de beaux rêves / des beaux rêves", "de": "schöne Träume", "img": "💤"}, {"id": "w8wg45r", "fr": "dans les mains", "de": "in die Hände", "img": "🙌"}]}, {"id": "dqdlui8", "title": "MF4 Fragen und Vergleichen", "words": [{"id": "w152jwq4", "fr": "Avec quoi ?", "de": "Womit?", "img": ""}, {"id": "wm6w9os", "fr": "Quand ?", "de": "Wann?", "img": "🕒"}, {"id": "wzy23pt", "fr": "à droite", "de": "rechts", "img": "👉"}, {"id": "wvnahu7", "fr": "à gauche", "de": "links", "img": "👈"}, {"id": "wf286g0", "fr": "Avec qui ?", "de": "Mit wem?", "img": ""}, {"id": "w16xjlew", "fr": "Quoi ?", "de": "Was?", "img": ""}, {"id": "w14q57e5", "fr": "Où ?", "de": "Wo?", "img": "📍"}, {"id": "w1p2fwho", "fr": "Qui ?", "de": "Wer?", "img": ""}, {"id": "w1hqz4mh", "fr": "le courage", "de": "der Mut", "img": ""}, {"id": "w68pngm", "fr": "comparer", "de": "vergleichen", "img": ""}, {"id": "w2shvzw", "fr": "les différences", "de": "die Unterschiede", "img": ""}, {"id": "wjql7zd", "fr": "la reine", "de": "die Königin", "img": "👸"}, {"id": "ws9p5vi", "fr": "la patience", "de": "die Geduld", "img": ""}, {"id": "w1b7pq1z", "fr": "la force", "de": "die Kraft", "img": "💪"}, {"id": "w1qcnwso", "fr": "la tactique", "de": "die Taktik", "img": ""}, {"id": "w1r2efp1", "fr": "l'endurance", "de": "die Ausdauer", "img": ""}, {"id": "w1w96354", "fr": "l'élégance", "de": "die Eleganz", "img": ""}, {"id": "wpca52n", "fr": "Pourquoi ?", "de": "Warum?", "img": ""}, {"id": "w1ym6q4o", "fr": "parce que", "de": "weil", "img": ""}, {"id": "w1lxb2v6", "fr": "Compare.", "de": "Vergleiche.", "img": ""}, {"id": "w99ham9", "fr": "un brouillon", "de": "ein Entwurf", "img": ""}]}, {"id": "d9n2nfr", "title": "MF4 Was sie macht", "words": [{"id": "w1j53ulv", "fr": "de temps en temps / parfois", "de": "manchmal", "img": ""}, {"id": "w1sqwn4c", "fr": "prendre", "de": "nehmen", "img": ""}, {"id": "w1jxc30k", "fr": "traverser", "de": "überqueren", "img": ""}, {"id": "w1gr7b0v", "fr": "construire", "de": "bauen, konstruieren", "img": "🏗️"}, {"id": "w1vbtva0", "fr": "aller", "de": "gehen", "img": "🚶"}, {"id": "wqm1brw", "fr": "avoir, être", "de": "haben, sein", "img": ""}, {"id": "wlrxjxv", "fr": "dire", "de": "sagen", "img": ""}, {"id": "w6e8lio", "fr": "gagner", "de": "gewinnen", "img": "🏆"}, {"id": "wdybk78", "fr": "elle tombe", "de": "sie fällt (um)", "img": ""}, {"id": "w1es5xoh", "fr": "elle monte sur...", "de": "sie steigt auf ...", "img": ""}, {"id": "w13kmvph", "fr": "elle s'inscrit à la/au...", "de": "sie meldet sich für ... an", "img": ""}, {"id": "wiguwx7", "fr": "elle se rend à la/au...", "de": "sie begibt sich zum/zur ...", "img": ""}, {"id": "w1wi4qd9", "fr": "elle rêve de devenir...", "de": "sie träumt davon, ... zu werden", "img": ""}, {"id": "w1dysxpb", "fr": "elle reçoit un/une...", "de": "sie erhält ...", "img": "🎁"}, {"id": "w7ozvq1", "fr": "elle rentre.", "de": "sie kehrt zurück.", "img": ""}, {"id": "w1a7fk5z", "fr": "elle traverse le/la...", "de": "sie überquert ...", "img": ""}, {"id": "wwpgxkz", "fr": "elle prend le/la...", "de": "sie nimmt ...", "img": ""}, {"id": "w11wz62x", "fr": "elle fait...", "de": "sie macht ...", "img": ""}, {"id": "w2afd3d", "fr": "C'est parti !", "de": "Los geht's!", "img": "🚀"}, {"id": "w1uajxuv", "fr": "Répartissez. (répartir)", "de": "Teilt auf. (aufteilen)", "img": ""}, {"id": "wg4q3lk", "fr": "une bande de film", "de": "ein Filmstreifen", "img": "🎞️"}]}]}</script>
+<div id="app"></div>
+<script id="app-js">
+(function () {
+  'use strict';
+
+  var KEY = 'mon-fichier-v1';
+  var TITLE = 'Mon fichier';
+  var FONTS = '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Grandstander:wght@600;800&display=swap">';
+  var RESET = ':root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px/1.4 system-ui,-apple-system,sans-serif}img{max-width:100%}[hidden]{display:none!important}';
+  var PICS = [['🍎', 'la pomme'], ['🐱', 'le chat'], ['⚽', 'le ballon'], ['☀️', 'le soleil'], ['🚲', 'le vélo'], ['🌙', 'la lune'], ['🐟', 'le poisson'], ['🌳', "l'arbre"], ['🏠', 'la maison']];
+  var INTERVAL = [0, 0, 1, 2, 4, 7]; // Tage bis zur nächsten Wiederholung, Index = Fach
+  var DAY = 864e5;
+  var ACCENTS = ['é', 'è', 'ê', 'ë', 'à', 'â', 'ç', 'î', 'ï', 'ô', 'û', 'ù', 'œ', "'"];
+  var $app = document.getElementById('app');
+  // "datei": eigenständige HTML-Datei für eine Website, sonst Artifact auf claude.ai
+  var MODE = (document.querySelector('meta[name="mon-fichier-modus"]') || {}).content || 'artifact';
+
+  var ICON = {
+    box: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9h18v11H3z"/><path d="M7 9V5h10v4"/><path d="M9 13h6"/></svg>',
+    ear: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>',
+    eye: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h11l5 5v9H4z"/><path d="M8 11h8M8 15h5"/></svg>',
+    mem: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.5"/></svg>',
+    bolt: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>',
+    duel: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="3"/><circle cx="16" cy="16" r="3"/><path d="M3 20c0-3 2-5 5-5M21 4c0 3-2 5-5 5"/></svg>',
+    speak: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>'
+  };
+
+  // ---------- Daten ----------
+  var PUB = { version: 1, pinHash: null, classes: [], decks: [] };
+  try {
+    var parsed = JSON.parse(document.getElementById('kartei-daten').textContent);
+    if (parsed && Array.isArray(parsed.decks)) PUB = parsed;
+  } catch (e) { /* Standarddaten behalten */ }
+  prepare(PUB);
+
+  var store = load();
+  if (store.draft) {
+    prepare(store.draft);
+    // Entwurf ist schon veröffentlicht (z. B. neue Datei hochgeladen): nicht mehr nötig
+    if (JSON.stringify(cleanData(store.draft)) === JSON.stringify(cleanData(PUB))) { delete store.draft; save(); }
+  }
+
+  function prepare(d) {
+    d.classes = d.classes || [];
+    d.decks = d.decks || [];
+    d.decks.forEach(function (k) {
+      k.words = (k.words || []).filter(function (w) { return w && w.fr && w.de; });
+      k.words.forEach(function (w) { if (!w.id) w.id = wid(w.fr, w.de); });
+    });
+  }
+  function load() {
+    var s = null;
+    try { s = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) { s = null; }
+    s = s || {};
+    s.profiles = s.profiles || {};
+    s.scores = s.scores || [];
+    s.recent = s.recent || [];
+    return s;
+  }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) { /* Speicher nicht verfügbar */ } }
+  function D() { return store.draft || PUB; }
+  function draft() {
+    if (!store.draft) { store.draft = JSON.parse(JSON.stringify(PUB)); save(); }
+    return store.draft;
+  }
+  function hash(s) {
+    var h = 5381;
+    for (var i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) >>> 0;
+    return h.toString(36);
+  }
+  function wid(fr, de) { return 'w' + hash(String(fr).trim() + '|' + String(de).trim()); }
+  function findClass(code) {
+    code = String(code || '').toUpperCase().replace(/\s+/g, '');
+    return D().classes.filter(function (c) { return c.code === code; })[0] || null;
+  }
+  function findDeck(id) { return D().decks.filter(function (k) { return k.id === id; })[0] || null; }
+
+  // ---------- Hilfsfunktionen ----------
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function shuffle(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+  function startOfDay() { var d = new Date(); d.setHours(0, 0, 0, 0); return d.getTime(); }
+  // Mehrere richtige Antworten: " / " mit Leerzeichen. "un/une" ohne Leerzeichen bleibt eine Antwort.
+  function alts(fr) { return String(fr).split(/\s+\/\s+/).map(function (x) { return x.trim(); }).filter(Boolean); }
+  function first(fr) { return alts(fr)[0] || ''; }
+  function norm(s) {
+    // Klammern (Grundform) und Auslassungspunkte muss niemand mittippen
+    return String(s || '').toLowerCase().replace(/\([^)]*\)/g, ' ').replace(/\.\.\.|…/g, ' ').replace(/[’‘`´]/g, "'").replace(/\s+/g, ' ').replace(/\s*'\s*/g, "'").replace(/[.!?;,\s]+$/, '').trim();
+  }
+  function bare(s) { return norm(s).normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/œ/g, 'oe'); }
+  function check(input, fr) {
+    var list = alts(fr);
+    var n = norm(input), b = bare(input);
+    if (!n) return 'no';
+    if (list.some(function (a) { return norm(a) === n; })) return 'ok';
+    if (list.some(function (a) { return bare(a) === b; })) return 'accent';
+    return 'no';
+  }
+  function fmtDate(ts) {
+    if (!ts) return 'noch nie';
+    var d = new Date(ts);
+    return d.getDate() + '.' + (d.getMonth() + 1) + '.' + d.getFullYear();
+  }
+  function sha(text) {
+    if (!(window.crypto && crypto.subtle)) return Promise.resolve('p' + hash('mf|' + text));
+    return crypto.subtle.digest('SHA-256', new TextEncoder().encode('mon-fichier|' + text)).then(function (buf) {
+      return Array.prototype.map.call(new Uint8Array(buf), function (x) { return ('0' + x.toString(16)).slice(-2); }).join('');
+    });
+  }
+
+  // ---------- Sprachausgabe ----------
+  var frVoice = null;
+  function pickVoice() {
+    if (!('speechSynthesis' in window)) return;
+    var vs = speechSynthesis.getVoices() || [];
+    var fr = vs.filter(function (v) { return /^fr/i.test(v.lang); });
+    frVoice = fr.filter(function (v) { return /fr[-_]CH/i.test(v.lang); })[0] || fr.filter(function (v) { return /fr[-_]FR/i.test(v.lang); })[0] || fr[0] || null;
+  }
+  if ('speechSynthesis' in window) { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
+  function speak(text) {
+    if (!('speechSynthesis' in window) || !text) return;
+    try {
+      speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance(first(text).replace(/\([^)]*\)/g, ' ').replace(/\//g, ', ').replace(/\.\.\.|…/g, ', '));
+      u.lang = frVoice ? frVoice.lang : 'fr-FR';
+      if (frVoice) u.voice = frVoice;
+      u.rate = 0.85;
+      speechSynthesis.speak(u);
+    } catch (e) { /* keine Sprachausgabe */ }
+  }
+
+  // ---------- Fortschritt (Karteikasten) ----------
+  function P() { return store.profiles[S.me]; }
+  function prog(deckId, profile) {
+    var p = profile || P();
+    p.progress = p.progress || {};
+    return p.progress[deckId] = p.progress[deckId] || {};
+  }
+  function fachOf(pr, w) { return (pr[w.id] && pr[w.id].f) || 1; }
+  function counts(deck, pr) {
+    var c = [0, 0, 0, 0, 0, 0];
+    deck.words.forEach(function (w) { c[fachOf(pr, w)]++; });
+    return c;
+  }
+  function dueWords(deck, pr) {
+    var now = Date.now();
+    return deck.words.filter(function (w) { var e = pr[w.id]; return !e || (e.due || 0) <= now; });
+  }
+  function grade(deckId, w, ok, moveBox) {
+    var pr = prog(deckId);
+    var e = pr[w.id] || (pr[w.id] = { f: 1, due: 0, r: 0, w: 0 });
+    if (ok) e.r++; else e.w++;
+    if (moveBox) {
+      if (ok) {
+        var wasFive = e.f === 5;
+        e.f = Math.min(5, e.f + 1);
+        e.due = startOfDay() + (wasFive ? 14 : INTERVAL[e.f]) * DAY;
+      } else { e.f = 1; e.due = 0; }
+    }
+    P().last = Date.now();
+    save();
+  }
+
+  // ---------- Zustand und Navigation ----------
+  var S = { view: 'start', me: null, deck: null, ctx: {}, teacher: false, tab: 'karteien', canPublish: null };
+  var timers = [];
+  function later(fn, ms) { var t = setTimeout(fn, ms); timers.push(t); return t; }
+  function every(fn, ms) { var t = setInterval(fn, ms); timers.push(t); return t; }
+  function clearTimers() { timers.forEach(function (t) { clearTimeout(t); clearInterval(t); }); timers = []; }
+  function go(view, ctx) {
+    clearTimers();
+    S.view = view;
+    S.ctx = ctx || {};
+    render();
+    try { window.scrollTo(0, 0); } catch (e) { /* egal */ }
+  }
+  var after = null;
+  function render() {
+    var v = VIEWS[S.view] || VIEWS.start;
+    after = null;
+    var html = v();
+    $app.innerHTML = S.view === 'duel' ? html : layout(html);
+    if (after) after();
+  }
+  function layout(inner) {
+    var right = '';
+    if (S.teacher) right = '<span class="chip">Lehrperson</span><button class="btn ghost small" data-act="teacherClose">Schliessen</button>';
+    else if (S.me && P()) right = '<span class="chip">' + esc(P().kuerzel) + ' · ' + esc(P().klasse) + '</span><button class="btn ghost small" data-act="logout">Abmelden</button>';
+    var home = S.teacher ? 'teacherHome' : (S.me ? 'home' : 'start');
+    return '<header class="top"><div class="top-in"><button class="brand" data-act="' + home + '"><span>Mon fichier</span></button><div class="spacer"></div>' + right + '</div></header><main>' + inner + '</main>';
+  }
+
+  // ---------- Ansichten ----------
+  var VIEWS = {};
+
+  VIEWS.start = function () {
+    var recent = store.recent.filter(function (c) { return findClass(c); });
+    after = function () { var i = document.getElementById('code'); if (i && !recent.length) i.focus(); };
+    return '<section class="sheet center pop">' +
+      '<h1>Salut !</h1><p class="muted">Gib den Klassencode ein, den du von deiner Lehrperson bekommen hast.</p>' +
+      '<form class="stack" style="width:min(100%,360px)" data-form="code">' +
+      '<input class="input big" id="code" name="code" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="z. B. 4B" value="' + esc(S.ctx.code || '') + '">' +
+      (S.ctx.err ? '<p class="err">' + esc(S.ctx.err) + '</p>' : '') +
+      '<button class="btn wide" type="submit">Weiter</button></form>' +
+      (recent.length ? '<div class="stack" style="width:min(100%,360px)"><p class="muted small">Auf diesem iPad schon benutzt:</p><div class="row" style="justify-content:center">' +
+        recent.map(function (c) { return '<button class="btn soft" data-act="pickClass" data-code="' + esc(c) + '">' + esc(c) + '</button>'; }).join('') + '</div></div>' : '') +
+      '</section>' +
+      '<p class="center muted small">Lehrperson? <button class="link" data-act="teacherOpen">Hier anmelden</button></p>';
+  };
+
+  VIEWS.who = function () {
+    var cl = findClass(S.ctx.code);
+    var list = Object.keys(store.profiles).map(function (k) { return store.profiles[k]; })
+      .filter(function (p) { return p.klasse === cl.code; })
+      .sort(function (a, b) { return a.kuerzel.localeCompare(b.kuerzel); });
+    return '<section class="sheet pop"><div class="row"><h2>' + esc(cl.name || cl.code) + '</h2><span class="chip">' + esc(cl.code) + '</span></div>' +
+      (list.length ? '<p class="muted">Tippe auf dein Kürzel.</p><div class="who-grid">' +
+        list.map(function (p) { return '<button class="who" data-act="pickProfile" data-id="' + esc(p.id) + '">' + esc(p.kuerzel) + '</button>'; }).join('') + '</div>'
+        : '<p class="muted">Auf diesem iPad hat sich in dieser Klasse noch niemand angemeldet.</p>') +
+      '<div class="row"><button class="btn" data-act="newProfile">Ich bin neu auf diesem iPad</button><button class="btn ghost" data-act="start">Zurück</button></div></section>';
+  };
+
+  VIEWS.newKuerzel = function () {
+    after = function () { var i = document.getElementById('kz'); if (i) i.focus(); };
+    return '<section class="sheet center pop"><h2>Dein Kürzel</h2><p class="muted">Zum Beispiel die ersten Buchstaben von Vor- und Nachname. Bitte nicht den ganzen Namen.</p>' +
+      '<form class="stack" style="width:min(100%,320px)" data-form="kuerzel"><input class="input big" id="kz" name="kz" maxlength="4" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="LM">' +
+      (S.ctx.err ? '<p class="err">' + esc(S.ctx.err) + '</p>' : '') +
+      '<button class="btn wide" type="submit">Weiter</button></form><button class="link" data-act="backWho">Zurück</button></section>';
+  };
+
+  function picGrid(sel) {
+    return '<div class="dots">' + [0, 1, 2].map(function (i) { return '<i class="' + (i < sel.length ? 'on' : '') + '"></i>'; }).join('') + '</div>' +
+      '<div class="pics" id="pics">' + PICS.map(function (p, i) {
+        var pos = sel.indexOf(i);
+        return '<button class="pic' + (pos >= 0 ? ' on' : '') + '" data-act="pic" data-i="' + i + '" aria-label="' + esc(p[1]) + '">' + p[0] + (pos >= 0 ? '<span class="n">' + (pos + 1) + '</span>' : '') + '</button>';
+      }).join('') + '</div>';
+  }
+  VIEWS.pwSet = function () {
+    var c = S.ctx;
+    var title = c.step === 2 ? 'Nochmals zur Kontrolle' : 'Wähle dein Bild-Passwort';
+    var hint = c.step === 2 ? 'Tippe die gleichen 3 Bilder in der gleichen Reihenfolge.' : 'Tippe 3 Bilder nacheinander an. Merke sie dir gut!';
+    return '<section class="sheet center pop"><h2>' + title + '</h2><p class="muted">' + hint + '</p>' + picGrid(c.sel || []) +
+      (c.err ? '<p class="err">' + esc(c.err) + '</p>' : '') + '<button class="link" data-act="backWho">Abbrechen</button></section>';
+  };
+  VIEWS.pwLogin = function () {
+    var p = store.profiles[S.ctx.id];
+    return '<section class="sheet center pop"><h2>Salut ' + esc(p.kuerzel) + ' !</h2><p class="muted">Tippe deine 3 Bilder.</p>' + picGrid(S.ctx.sel || []) +
+      (S.ctx.err ? '<p class="err">' + esc(S.ctx.err) + '</p>' : '') + '<button class="link" data-act="backWho">Das bin nicht ich</button></section>';
+  };
+
+  VIEWS.home = function () {
+    var decks = D().decks;
+    var p = P();
+    return '<section class="sheet pop"><h1>Bonjour ' + esc(p.kuerzel) + ' !</h1><p class="muted">Welche Kartei möchtest du üben?</p>' +
+      (decks.length ? '<div class="grid-tiles">' + decks.map(function (k) {
+        var pr = prog(k.id); var c = counts(k, pr); var n = k.words.length; var due = dueWords(k, pr).length;
+        var pct = n ? Math.round(c[5] / n * 100) : 0;
+        return '<button class="tile" data-act="openDeck" data-id="' + esc(k.id) + '"><b>' + esc(k.title) + '</b><span>' + n + ' Wörter · ' + due + ' heute dran</span>' +
+          '<div class="progress" aria-label="' + pct + ' Prozent in Fach 5"><i style="width:' + pct + '%"></i></div></button>';
+      }).join('') + '</div>' : '<p class="note">Es gibt noch keine Karteien. Deine Lehrperson muss zuerst Wörter erfassen.</p>') +
+      '</section>';
+  };
+
+  function boxHtml(c, n) {
+    var max = Math.max(1, n);
+    return '<div class="box">' + [1, 2, 3, 4, 5].map(function (f) {
+      var h = Math.round(c[f] / max * 100);
+      return '<div class="fach"><div class="num">' + c[f] + '</div><div class="well"><div class="fill c' + f + '" style="height:' + h + '%"></div></div><div class="lab">Fach ' + f + '</div></div>';
+    }).join('') + '</div>';
+  }
+  function topScores(game, deckId, klasse, n) {
+    return store.scores.filter(function (s) { return s.game === game && s.deck === deckId && s.klasse === klasse; })
+      .sort(function (a, b) { return b.pts - a.pts || a.ts - b.ts; }).slice(0, n || 5);
+  }
+  VIEWS.deck = function () {
+    var k = findDeck(S.deck); if (!k) { return VIEWS.home(); }
+    var pr = prog(k.id); var c = counts(k, pr); var due = dueWords(k, pr).length;
+    var prefs = P().prefs || (P().prefs = { dir: 'see', ans: 'write' });
+    var hs = topScores('blitz', k.id, P().klasse, 5);
+    var tile = function (act, ico, t, d, extra) {
+      return '<button class="tile' + (extra || '') + '" data-act="' + act + '"><div class="ico">' + ICON[ico] + '</div><b>' + t + '</b><span>' + d + '</span></button>';
+    };
+    var small = k.words.length < 4;
+    return '<section class="sheet pop"><div class="row"><h2 style="flex:1">' + esc(k.title) + '</h2><button class="btn ghost small" data-act="home">Andere Kartei</button></div>' +
+      '<h3>Mein Karteikasten</h3>' + boxHtml(c, k.words.length) +
+      '<p class="muted small">Richtig: Die Karte rutscht ein Fach weiter. Falsch: Sie kommt zurück in Fach 1.</p></section>' +
+      '<section class="sheet"><h3>Karteikasten üben</h3>' +
+      '<div class="row"><span class="muted small" style="min-width:110px">Ich sehe:</span><div class="seg"><button class="' + (prefs.dir === 'see' ? 'on' : '') + '" data-act="pref" data-k="dir" data-v="see">Bild und Deutsch</button><button class="' + (prefs.dir === 'hear' ? 'on' : '') + '" data-act="pref" data-k="dir" data-v="hear">Ich höre nur</button></div></div>' +
+      '<div class="row"><span class="muted small" style="min-width:110px">Antwort:</span><div class="seg"><button class="' + (prefs.ans === 'write' ? 'on' : '') + '" data-act="pref" data-k="ans" data-v="write">Schreiben</button><button class="' + (prefs.ans === 'self' ? 'on' : '') + '" data-act="pref" data-k="ans" data-v="self">Umdrehen, selbst prüfen</button></div></div>' +
+      '<button class="btn wide" data-act="kkStart">' + (due ? 'Los, ' + Math.min(due, 12) + ' Karten üben' : 'Heute ist alles erledigt. Trotzdem üben?') + '</button></section>' +
+      '<section class="sheet"><h3>Übungen und Spiele</h3>' +
+      (small ? '<p class="note warn">Für diese Übungen braucht die Kartei mindestens 4 Wörter.</p>' : '<div class="grid-tiles">' +
+        tile('chooseHear', 'ear', 'Hören und wählen', 'Du hörst ein Wort und tippst das richtige Bild.') +
+        tile('chooseRead', 'eye', 'Lesen und wählen', 'Du liest ein Wort und tippst die Übersetzung.') +
+        tile('memStart', 'mem', 'Memory', 'Finde die Paare Französisch und Deutsch.') +
+        tile('blitzStart', 'bolt', 'Wort-Blitz', '60 Sekunden. Wie viele Punkte schaffst du?') +
+        tile('duelSetup', 'duel', 'Duell zu zweit', 'Zwei Kinder, ein iPad. Wer ist schneller?') +
+        '</div>') + '</section>' +
+      '<section class="sheet"><h3>Bestenliste Wort-Blitz · ' + esc(P().klasse) + '</h3>' + scoreTable(hs) + '<p class="muted small">Zeigt die Punkte, die auf diesem iPad gespielt wurden.</p></section>';
+  };
+  function scoreTable(hs) {
+    if (!hs.length) return '<p class="muted">Noch keine Punkte. Sei die oder der Erste!</p>';
+    return '<div class="scroll"><table class="hs"><thead><tr><th>Platz</th><th>Kürzel</th><th>Datum</th><th style="text-align:right">Punkte</th></tr></thead><tbody>' +
+      hs.map(function (s, i) { return '<tr class="' + (s.pid === S.me ? 'me' : '') + '"><td>' + (i + 1) + '.</td><td>' + esc(s.kuerzel) + '</td><td>' + fmtDate(s.ts) + '</td><td class="r">' + s.pts + '</td></tr>'; }).join('') +
+      '</tbody></table></div>';
+  }
+
+  // Karteikasten-Übung
+  VIEWS.kk = function () {
+    var c = S.ctx, k = findDeck(S.deck), w = c.list[c.i];
+    var prefs = P().prefs;
+    var pr = prog(k.id);
+    var f = fachOf(pr, w);
+    var pct = Math.round(c.i / c.list.length * 100);
+    var prompt = prefs.dir === 'hear'
+      ? '<button class="speak big" data-act="say" data-t="' + esc(w.fr) + '" aria-label="Nochmals hören">' + ICON.speak + '</button><p class="muted">Hör gut zu.</p>'
+      : (w.img ? '<div class="emo">' + esc(w.img) + '</div>' : '') + '<div class="de">' + esc(w.de) + '</div>';
+    var body = '';
+    if (c.state === 'ask' && prefs.ans === 'write') {
+      after = function () { var i = document.getElementById('answer'); if (i) i.focus(); if (prefs.dir === 'hear' && !c.spoken) { c.spoken = true; speak(w.fr); } };
+      body = '<form class="stack" style="width:min(100%,460px)" data-form="answer"><input class="input" id="answer" name="answer" lang="fr" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Auf Französisch …" value="' + esc(c.typed || '') + '">' +
+        '<div class="accents">' + ACCENTS.map(function (a) { return '<button type="button" data-act="accent" data-c="' + esc(a) + '">' + esc(a) + '</button>'; }).join('') + '</div>' +
+        '<button class="btn wide" type="submit">Prüfen</button></form>';
+    } else if (c.state === 'ask') {
+      after = function () { if (prefs.dir === 'hear' && !c.spoken) { c.spoken = true; speak(w.fr); } };
+      body = '<button class="btn wide" style="max-width:460px" data-act="flip">Umdrehen</button>';
+    } else if (c.state === 'flipped') {
+      body = '<div class="fr">' + esc(w.fr) + '</div>' + (prefs.dir === 'hear' ? '<div class="de">' + esc(w.img || '') + ' ' + esc(w.de) + '</div>' : '') +
+        '<button class="speak" data-act="say" data-t="' + esc(w.fr) + '" aria-label="Anhören">' + ICON.speak + '</button>' +
+        '<p class="muted">Hast du es gewusst?</p><div class="row" style="justify-content:center"><button class="btn good" data-act="selfGrade" data-ok="1">Gewusst</button><button class="btn bad" data-act="selfGrade" data-ok="0">Noch nicht</button></div>';
+    } else {
+      after = function () { var b = document.getElementById('next'); if (b) b.focus(); };
+      var r = c.result;
+      var head = r === 'ok' ? 'Super, richtig!' : r === 'accent' ? 'Fast! Achte auf die Akzente.' : 'Leider falsch.';
+      body = '<div class="feedback ' + (r === 'ok' ? 'ok' : r === 'accent' ? 'accent' : 'no') + '"><b>' + head + '</b>' +
+        (r !== 'ok' && c.typed ? '<span>Du hast geschrieben: ' + esc(c.typed) + '</span>' : '') +
+        '<span class="sol">' + esc(w.fr) + '</span>' + (prefs.dir === 'hear' ? '<span>' + esc(w.img || '') + ' ' + esc(w.de) + '</span>' : '') +
+        '<span>' + (r === 'no' ? 'Die Karte geht zurück in Fach 1.' : 'Die Karte rutscht in Fach ' + Math.min(5, c.fromFach + 1) + '.') + '</span></div>' +
+        '<div class="row" style="justify-content:center"><button class="speak" data-act="say" data-t="' + esc(w.fr) + '" aria-label="Anhören">' + ICON.speak + '</button><button class="btn" id="next" data-act="kkNext">Weiter</button></div>';
+    }
+    return '<section class="stack pop"><div class="row"><span class="pill c' + (c.state === 'done' ? c.fromFach : f) + '">Fach ' + (c.state === 'done' ? c.fromFach : f) + '</span><span class="muted small" style="flex:1">Karte ' + (c.i + 1) + ' von ' + c.list.length + '</span><button class="btn ghost small" data-act="openDeck" data-id="' + esc(k.id) + '">Beenden</button></div>' +
+      '<div class="progress"><i style="width:' + pct + '%"></i></div>' +
+      '<div class="card">' + prompt + body + '</div></section>';
+  };
+
+  VIEWS.result = function () {
+    var c = S.ctx;
+    var ratio = c.total ? c.right / c.total : 0;
+    var stars = ratio >= .9 ? 3 : ratio >= .6 ? 2 : ratio > 0 ? 1 : 0;
+    return '<section class="sheet center pop"><div class="stars" aria-label="' + stars + ' von 3 Sternen">' + '★★★'.slice(0, stars) + '<span class="muted">' + '☆☆☆'.slice(0, 3 - stars) + '</span></div>' +
+      '<h2>' + esc(c.title) + '</h2>' +
+      (c.big != null ? '<div class="big-num">' + c.big + '</div>' : '') +
+      '<p>' + esc(c.text) + '</p>' + (c.extra || '') +
+      '<div class="row" style="justify-content:center"><button class="btn" data-act="' + c.again + '">Nochmals</button><button class="btn ghost" data-act="openDeck" data-id="' + esc(S.deck) + '">Zur Kartei</button></div></section>';
+  };
+
+  // Hören/Lesen und wählen
+  function makeOptions(words, target, n) {
+    var others = shuffle(words.filter(function (w) { return w.id !== target.id && w.de !== target.de; })).slice(0, n - 1);
+    return shuffle(others.concat([target]));
+  }
+  VIEWS.choose = function () {
+    var c = S.ctx, w = c.list[c.i];
+    if (c.mode === 'hear' && !c.spoken) { c.spoken = true; after = function () { speak(w.fr); }; }
+    var prompt = c.mode === 'hear'
+      ? '<button class="speak big" data-act="say" data-t="' + esc(w.fr) + '" aria-label="Nochmals hören">' + ICON.speak + '</button><p class="muted">Welches Wort hörst du?</p>'
+      : '<div class="fr">' + esc(w.fr) + '</div><button class="speak" data-act="say" data-t="' + esc(w.fr) + '" aria-label="Anhören">' + ICON.speak + '</button><p class="muted">Was heisst das auf Deutsch?</p>';
+    return '<section class="stack pop"><div class="row"><span class="muted small" style="flex:1">Frage ' + (c.i + 1) + ' von ' + c.list.length + ' · ' + c.right + ' richtig</span><button class="btn ghost small" data-act="openDeck" data-id="' + esc(S.deck) + '">Beenden</button></div>' +
+      '<div class="progress"><i style="width:' + Math.round(c.i / c.list.length * 100) + '%"></i></div>' +
+      '<div class="card">' + prompt + '<div class="opts">' + c.opts.map(function (o) {
+        var cls = '';
+        if (c.picked) { if (o.id === w.id) cls = ' ok'; else if (o.id === c.picked) cls = ' no'; }
+        return '<button class="opt' + cls + '" data-act="choosePick" data-id="' + esc(o.id) + '"' + (c.picked ? ' disabled' : '') + '>' + (o.img ? '<span class="e">' + esc(o.img) + '</span>' : '') + '<span>' + esc(o.de) + '</span></button>';
+      }).join('') + '</div></div></section>';
+  };
+
+  // Memory
+  VIEWS.memory = function () {
+    var c = S.ctx;
+    return '<section class="stack pop"><div class="row"><span class="muted small" style="flex:1">Züge: ' + c.moves + ' · Paare: ' + c.found + ' von ' + c.pairs + '</span><button class="btn ghost small" data-act="openDeck" data-id="' + esc(S.deck) + '">Beenden</button></div>' +
+      '<div class="mem">' + c.cards.map(function (m, i) {
+        var open = m.done || c.open.indexOf(i) >= 0;
+        var cls = 'mcard' + (open ? ' open' : '') + (m.done ? ' done' : '') + (open && m.side === 'fr' ? ' fr' : '');
+        var inner = !open ? '<span class="back">?</span>' : m.side === 'fr' ? esc(m.w.fr) : (m.w.img ? '<span><span class="e">' + esc(m.w.img) + '</span>' + esc(m.w.de) + '</span>' : esc(m.w.de));
+        return '<button class="' + cls + '" data-act="memFlip" data-i="' + i + '"' + (m.done ? ' disabled' : '') + ' aria-label="' + (open ? '' : 'Karte umdrehen') + '">' + inner + '</button>';
+      }).join('') + '</div></section>';
+  };
+
+  // Wort-Blitz
+  VIEWS.blitz = function () {
+    var c = S.ctx, w = c.w;
+    after = function () {
+      if (!c.timer) {
+        c.timer = every(function () {
+          c.left = Math.max(0, 60 - Math.floor((Date.now() - c.t0) / 1000));
+          var el = document.getElementById('left'); if (el) el.textContent = c.left;
+          if (c.left <= 0) blitzEnd();
+        }, 250);
+      }
+    };
+    return '<section class="stack pop"><div class="row"><span class="chip">Zeit: <span id="left">' + c.left + '</span> s</span><span class="chip">Punkte: ' + c.pts + '</span>' + (c.streak > 1 ? '<span class="chip">Serie ' + c.streak + '</span>' : '') + '<span style="flex:1"></span><button class="btn ghost small" data-act="openDeck" data-id="' + esc(S.deck) + '">Beenden</button></div>' +
+      '<div class="card"><div class="fr">' + esc(w.fr) + '</div><button class="speak" data-act="say" data-t="' + esc(w.fr) + '" aria-label="Anhören">' + ICON.speak + '</button>' +
+      '<div class="opts">' + c.opts.map(function (o) {
+        var cls = c.picked ? (o.id === w.id ? ' ok' : o.id === c.picked ? ' no' : '') : '';
+        return '<button class="opt' + cls + '" data-act="blitzPick" data-id="' + esc(o.id) + '"' + (c.picked ? ' disabled' : '') + '>' + (o.img ? '<span class="e">' + esc(o.img) + '</span>' : '') + '<span>' + esc(o.de) + '</span></button>';
+      }).join('') + '</div></div></section>';
+  };
+
+  // Duell
+  VIEWS.duelSetup = function () {
+    after = function () { var i = document.getElementById('p2'); if (i) i.focus(); };
+    return '<section class="sheet pop"><h2>Duell zu zweit</h2><p class="muted">Legt das iPad flach zwischen euch. Jedes Kind tippt auf seiner Seite. Wer zuerst richtig tippt, bekommt den Punkt. Wer falsch tippt, muss diese Runde aussetzen.</p>' +
+      '<form class="stack" data-form="duel"><div class="field"><label>Spieler:in 1 (unten)</label><input class="input" value="' + esc(P().kuerzel) + '" disabled></div>' +
+      '<div class="field"><label for="p2">Spieler:in 2 (oben), Kürzel</label><input class="input" id="p2" name="p2" maxlength="4" autocomplete="off" autocapitalize="characters" placeholder="z. B. AB"></div>' +
+      '<div class="field"><label for="rounds">Runden</label><select class="input" id="rounds" name="rounds"><option>5</option><option selected>10</option><option>15</option></select></div>' +
+      '<div class="row"><button class="btn" type="submit">Duell starten</button><button class="btn ghost" type="button" data-act="openDeck" data-id="' + esc(S.deck) + '">Zurück</button></div></form></section>';
+  };
+  function duelHalf(c, p) {
+    var w = c.w, st = c.p[p];
+    var cls = 'half p' + (p + 1) + (c.winner === p ? ' won' : '') + (st.locked && c.winner == null ? ' lock' : '');
+    return '<div class="' + cls + '"><div class="who-l">' + esc(st.name) + ' · ' + st.score + ' Punkte</div><div class="fr">' + esc(w.fr) + '</div>' +
+      '<div class="opts">' + st.opts.map(function (o) {
+        var oc = '';
+        if (c.winner != null || c.reveal) { if (o.id === w.id) oc = ' ok'; }
+        if (st.wrong === o.id) oc = ' no';
+        return '<button class="opt' + oc + '" data-act="duelPick" data-p="' + p + '" data-id="' + esc(o.id) + '"' + (st.locked || c.winner != null || c.reveal ? ' disabled' : '') + '>' + (o.img ? '<span class="e">' + esc(o.img) + '</span>' : '') + '<span>' + esc(o.de) + '</span></button>';
+      }).join('') + '</div></div>';
+  }
+  VIEWS.duel = function () {
+    var c = S.ctx;
+    return '<div class="duel">' + duelHalf(c, 1) +
+      '<div class="mid"><span class="score">' + esc(c.p[0].name) + ' ' + c.p[0].score + ' : ' + c.p[1].score + ' ' + esc(c.p[1].name) + '</span><span class="muted small">Runde ' + (c.round + 1) + ' von ' + c.rounds + '</span>' +
+      '<div class="row"><button class="speak" style="width:48px;height:48px" data-act="say" data-t="' + esc(c.w.fr) + '" aria-label="Anhören">' + ICON.speak + '</button><button class="btn ghost small" data-act="duelQuit">Beenden</button></div></div>' +
+      duelHalf(c, 0) + '</div>';
+  };
+
+  // ---------- Lehrpersonen-Bereich ----------
+  VIEWS.pin = function () {
+    var hasPin = !!D().pinHash;
+    after = function () { var i = document.getElementById('pin'); if (i) i.focus(); };
+    return '<section class="sheet center pop"><h2>' + (hasPin ? 'Lehrpersonen-PIN' : 'PIN festlegen') + '</h2>' +
+      '<p class="muted">' + (hasPin ? 'Gib die PIN ein, um Karteien, Klassen und die Übersicht zu öffnen.' : 'Lege eine PIN mit mindestens 4 Ziffern fest. Sie gilt für alle Lehrpersonen dieser App.') + '</p>' +
+      '<form class="stack" style="width:min(100%,320px)" data-form="pin"><input class="input big" id="pin" name="pin" type="password" inputmode="numeric" autocomplete="off" placeholder="PIN">' +
+      (hasPin ? '' : '<input class="input big" name="pin2" type="password" inputmode="numeric" autocomplete="off" placeholder="PIN wiederholen">') +
+      (S.ctx.err ? '<p class="err">' + esc(S.ctx.err) + '</p>' : '') +
+      '<button class="btn wide" type="submit">' + (hasPin ? 'Öffnen' : 'PIN speichern') + '</button></form><button class="link" data-act="start">Zurück</button></section>';
+  };
+
+  function teacherTabs() {
+    var t = [['karteien', 'Karteien'], ['klassen', 'Klassen'], ['uebersicht', 'Übersicht'], ['teilen', MODE === 'datei' ? 'App-Datei' : 'Veröffentlichen']];
+    return '<div class="tabs">' + t.map(function (x) { return '<button class="' + (S.tab === x[0] ? 'on' : '') + '" data-act="tab" data-t="' + x[0] + '">' + x[1] + '</button>'; }).join('') + '</div>';
+  }
+  function draftNote() {
+    return store.draft ? '<p class="note warn">Du hast Änderungen, die bisher nur auf diesem Gerät gespeichert sind. <button class="link" data-act="tab" data-t="teilen">' + (MODE === 'datei' ? 'Neue App-Datei erstellen' : 'Jetzt veröffentlichen') + '</button></p>' : '';
+  }
+  VIEWS.teacher = function () {
+    var body = TEACHER[S.tab]();
+    return '<section class="stack">' + teacherTabs() + draftNote() + '</section>' + body;
+  };
+  var TEACHER = {};
+  TEACHER.karteien = function () {
+    var d = D();
+    return '<section class="sheet"><h2>Karteien</h2>' +
+      (d.decks.length ? '<div class="scroll"><table class="hs"><thead><tr><th>Kartei</th><th>Wörter</th><th></th></tr></thead><tbody>' +
+        d.decks.map(function (k) { return '<tr><td>' + esc(k.title) + '</td><td>' + k.words.length + '</td><td class="r"><button class="btn soft small" data-act="deckEdit" data-id="' + esc(k.id) + '">Bearbeiten</button></td></tr>'; }).join('') +
+        '</tbody></table></div>' : '<p class="muted">Noch keine Karteien.</p>') +
+      '<div class="row"><button class="btn soft" data-act="deckNew">Leere Kartei anlegen</button></div></section>' +
+      '<section class="sheet"><h2>Wörter aus Excel übernehmen</h2>' +
+      '<p class="muted">Spalten: <b>Französisch</b>, <b>Deutsch</b>, <b>Thema/Kapitel</b>, <b>Bild</b>. Jedes Thema wird eine eigene Kartei. In die Spalte Bild passt ein Emoji, zum Beispiel 🐶. Mehrere richtige Antworten trennst du mit einem Schrägstrich: <i>le vélo / la bicyclette</i>.</p>' +
+      '<div class="field"><label for="file">Datei wählen (.xlsx oder .csv)</label><input class="input" id="file" type="file" accept=".xlsx,.csv,.txt,text/csv"></div>' +
+      '<div class="field"><label for="paste">Oder Zellen in Excel markieren, kopieren und hier einfügen</label><textarea class="input" id="paste" placeholder="Französisch&#9;Deutsch&#9;Thema&#9;Bild&#10;le chien&#9;der Hund&#9;Les animaux&#9;🐶"></textarea></div>' +
+      '<div class="field"><label for="fallback">Name der Kartei, wenn die Spalte Thema leer ist</label><input class="input" id="fallback" value="' + esc(S.ctx.fallback || 'Neue Kartei') + '"></div>' +
+      '<button class="btn" data-act="importPaste">Eingefügte Wörter übernehmen</button>' +
+      (S.ctx.msg ? '<p class="note">' + S.ctx.msg + '</p>' : '') + '</section>';
+  };
+  TEACHER.klassen = function () {
+    var d = D();
+    return '<section class="sheet"><h2>Klassen</h2><p class="muted">Die Kinder melden sich mit dem Klassencode an. Er sollte kurz und leicht zu tippen sein.</p>' +
+      (d.classes.length ? '<div class="scroll"><table class="hs"><thead><tr><th>Code</th><th>Name</th><th></th></tr></thead><tbody>' +
+        d.classes.map(function (c) {
+          var confirm = S.ctx.delClass === c.code;
+          return '<tr><td><b>' + esc(c.code) + '</b></td><td>' + esc(c.name) + '</td><td class="r">' +
+            (confirm ? '<button class="btn bad small" data-act="classDelYes" data-code="' + esc(c.code) + '">Wirklich löschen</button> <button class="link" data-act="tab" data-t="klassen">Nein</button>'
+              : '<button class="btn ghost small" data-act="classDel" data-code="' + esc(c.code) + '">Löschen</button>') + '</td></tr>';
+        }).join('') + '</tbody></table></div>' : '<p class="muted">Noch keine Klassen.</p>') +
+      '<form class="row" data-form="classAdd" style="align-items:end"><div class="field" style="flex:1;min-width:140px"><label for="cc">Code</label><input class="input" id="cc" name="cc" maxlength="12" autocapitalize="characters" placeholder="4B"></div>' +
+      '<div class="field" style="flex:2;min-width:180px"><label for="cn">Name</label><input class="input" id="cn" name="cn" placeholder="4b Frau Muster"></div><button class="btn" type="submit">Hinzufügen</button></form>' +
+      (S.ctx.err ? '<p class="err">' + esc(S.ctx.err) + '</p>' : '') + '</section>';
+  };
+  TEACHER.uebersicht = function () {
+    var d = D();
+    var cl = S.ctx.cls || (d.classes[0] && d.classes[0].code) || '';
+    var dk = S.ctx.dk || (d.decks[0] && d.decks[0].id) || '';
+    var deck = findDeck(dk);
+    var profiles = Object.keys(store.profiles).map(function (k) { return store.profiles[k]; }).filter(function (p) { return p.klasse === cl; })
+      .sort(function (a, b) { return a.kuerzel.localeCompare(b.kuerzel); });
+    var rows = profiles.map(function (p) {
+      var pr = deck ? prog(deck.id, p) : {};
+      var c = deck ? counts(deck, pr) : [0, 0, 0, 0, 0, 0];
+      var hard = deck ? deck.words.filter(function (w) { return pr[w.id] && pr[w.id].w > 0; })
+        .sort(function (a, b) { return (pr[b.id].w - pr[b.id].r) - (pr[a.id].w - pr[a.id].r); }).slice(0, 3).map(function (w) { return w.fr; }) : [];
+      return { p: p, c: c, hard: hard };
+    });
+    S.ctx.tableRows = rows;
+    var sel = function (id, list, val) { return '<select class="input" id="' + id + '" data-change="' + id + '">' + list.map(function (x) { return '<option value="' + esc(x[0]) + '"' + (x[0] === val ? ' selected' : '') + '>' + esc(x[1]) + '</option>'; }).join('') + '</select>'; };
+    return '<section class="sheet"><h2>Übersicht auf diesem iPad</h2>' +
+      '<p class="note">Der Fortschritt wird nur auf dem Gerät gespeichert, auf dem geübt wurde. Du siehst hier die Kinder, die auf <b>diesem</b> iPad üben.</p>' +
+      '<div class="row"><div class="field" style="flex:1;min-width:160px"><label for="ovCls">Klasse</label>' + sel('ovCls', d.classes.map(function (c) { return [c.code, c.code + ' · ' + c.name]; }), cl) + '</div>' +
+      '<div class="field" style="flex:2;min-width:200px"><label for="ovDeck">Kartei</label>' + sel('ovDeck', d.decks.map(function (k) { return [k.id, k.title]; }), dk) + '</div></div>' +
+      (rows.length ? '<div class="scroll"><table class="hs"><thead><tr><th>Kürzel</th><th>F1</th><th>F2</th><th>F3</th><th>F4</th><th>F5</th><th>Zuletzt</th><th>Schwierige Wörter</th><th></th></tr></thead><tbody>' +
+        rows.map(function (r) {
+          var confirm = S.ctx.delProfile === r.p.id;
+          return '<tr><td><b>' + esc(r.p.kuerzel) + '</b></td>' + [1, 2, 3, 4, 5].map(function (f) { return '<td class="r">' + r.c[f] + '</td>'; }).join('') +
+            '<td>' + fmtDate(r.p.last) + '</td><td>' + esc(r.hard.join(', ') || '–') + '</td><td class="r" style="white-space:nowrap">' +
+            (confirm ? '<button class="btn bad small" data-act="profileDelYes" data-id="' + esc(r.p.id) + '">Wirklich löschen</button> <button class="link" data-act="tab" data-t="uebersicht">Nein</button>'
+              : '<button class="btn soft small" data-act="pwReset" data-id="' + esc(r.p.id) + '">' + (r.p.pw ? 'Bild-Passwort zurücksetzen' : 'Passwort ist zurückgesetzt') + '</button> <button class="btn ghost small" data-act="profileDel" data-id="' + esc(r.p.id) + '">Löschen</button>') +
+            '</td></tr>';
+        }).join('') + '</tbody></table></div><button class="btn soft" data-act="copyTable">Tabelle kopieren (für Excel)</button>'
+        : '<p class="muted">Auf diesem iPad hat in dieser Klasse noch niemand geübt.</p>') +
+      (S.ctx.msg ? '<p class="note">' + esc(S.ctx.msg) + '</p>' : '') + '</section>';
+  };
+  TEACHER.teilen = function () {
+    var can = S.canPublish;
+    var pinForm = '<section class="sheet"><h2>PIN ändern</h2><form class="row" data-form="pinChange" style="align-items:end"><div class="field" style="flex:1;min-width:160px"><label for="np">Neue PIN</label><input class="input" id="np" name="np" type="password" inputmode="numeric" autocomplete="off"></div><button class="btn soft" type="submit">Ändern</button></form>' +
+      '<p class="muted small">Die PIN schützt vor neugierigen Kindern, ist aber keine sichere Verschlüsselung.</p></section>';
+    if (MODE === 'datei') {
+      return '<section class="sheet"><h2>Neue App-Datei erstellen</h2>' +
+        '<p>Karteien, Klassen und die PIN stecken in der App-Datei selbst. So kommen deine Änderungen auf alle iPads:</p>' +
+        '<ol class="stack" style="margin:0;padding-left:1.2em"><li>Lade hier die neue Datei herunter.</li><li>Ersetze auf der Website die alte Datei <b>index.html</b> durch die neue. Die Adresse der App muss gleich bleiben, sonst ist der Fortschritt der Kinder nicht mehr sichtbar.</li><li>Auf den iPads die Seite neu laden.</li></ol>' +
+        '<p class="muted small">Der Fortschritt der Kinder ist nicht in der Datei. Er bleibt auf ihren iPads.</p>' +
+        (store.draft ? '<p class="note warn">Es gibt Änderungen auf diesem Gerät, die noch nicht in der Datei auf der Website sind.</p>' : '<p class="note">Die Datei entspricht dem aktuellen Stand.</p>') +
+        '<div class="row"><button class="btn" data-act="downloadFile">App-Datei herunterladen</button>' +
+        (store.draft ? (S.ctx.discard ? '<button class="btn bad" data-act="discardYes">Wirklich verwerfen</button>' : '<button class="btn ghost" data-act="discard">Änderungen verwerfen</button>') : '') + '</div>' +
+        (S.ctx.msg ? '<p class="note">' + esc(S.ctx.msg) + '</p>' : '') + '</section>' + pinForm;
+    }
+    return '<section class="sheet"><h2>Für alle Geräte veröffentlichen</h2>' +
+      '<p>Karteien, Klassen und die PIN gehören zur App selbst. Erst wenn du veröffentlichst, sehen alle iPads die neuen Wörter. Der Fortschritt der Kinder bleibt dabei auf ihren iPads und wird nie mitgeschickt.</p>' +
+      (store.draft ? '<p class="note warn">Es gibt Änderungen auf diesem Gerät, die noch nicht veröffentlicht sind.</p>' : '<p class="note">Alles ist veröffentlicht.</p>') +
+      (can === false ? '<p class="note warn">Auf diesem Gerät oder mit diesem Link darfst du nicht veröffentlichen. Öffne die App mit dem Konto, dem sie gehört, oder lass dir Bearbeitungsrechte geben.</p>' : '') +
+      '<div class="row"><button class="btn" data-act="publish"' + (store.draft ? '' : ' disabled') + '>Jetzt veröffentlichen</button>' +
+      (store.draft ? (S.ctx.discard ? '<button class="btn bad" data-act="discardYes">Wirklich verwerfen</button>' : '<button class="btn ghost" data-act="discard">Änderungen verwerfen</button>') : '') + '</div>' +
+      (S.ctx.msg ? '<p class="note">' + esc(S.ctx.msg) + '</p>' : '') + '</section>' +
+      '<section class="sheet"><h2>PIN ändern</h2><form class="row" data-form="pinChange" style="align-items:end"><div class="field" style="flex:1;min-width:160px"><label for="np">Neue PIN</label><input class="input" id="np" name="np" type="password" inputmode="numeric" autocomplete="off"></div><button class="btn soft" type="submit">Ändern</button></form>' +
+      '<p class="muted small">Die PIN schützt vor neugierigen Kindern, ist aber keine sichere Verschlüsselung.</p></section>';
+  };
+
+  VIEWS.deckEdit = function () {
+    var c = S.ctx;
+    return '<section class="sheet pop"><div class="row"><h2 style="flex:1">Kartei bearbeiten</h2><button class="btn ghost small" data-act="teacherHome">Zurück</button></div>' +
+      '<div class="field"><label for="dt">Name</label><input class="input" id="dt" value="' + esc(c.title) + '"></div>' +
+      '<div class="scroll"><table class="hs edit"><thead><tr><th>Französisch</th><th>Deutsch</th><th>Bild</th><th></th></tr></thead><tbody>' +
+      c.rows.map(function (r, i) {
+        return '<tr><td><input class="input" data-row="' + i + '" data-k="fr" value="' + esc(r.fr) + '" lang="fr" autocapitalize="off"></td><td><input class="input" data-row="' + i + '" data-k="de" value="' + esc(r.de) + '"></td>' +
+          '<td class="emo-col"><input class="input" data-row="' + i + '" data-k="img" value="' + esc(r.img || '') + '" maxlength="8"></td><td class="del"><button class="x" data-act="rowDel" data-i="' + i + '" aria-label="Zeile löschen">✕</button></td></tr>';
+      }).join('') + '</tbody></table></div>' +
+      '<div class="row"><button class="btn soft" data-act="rowAdd">Zeile hinzufügen</button><span style="flex:1"></span><button class="btn" data-act="deckSave">Speichern</button></div>' +
+      '<div class="row">' + (c.confirmDel ? '<button class="btn bad" data-act="deckDelYes">Kartei wirklich löschen</button><button class="link" data-act="deckDelNo">Nein</button>' : '<button class="btn ghost small" data-act="deckDel">Kartei löschen</button>') + '</div></section>';
+  };
+
+  // ---------- Import (Excel, CSV, Einfügen) ----------
+  function parseDelimited(text) {
+    text = text.replace(/^﻿/, '');
+    var firstLine = text.split(/\r?\n/)[0] || '';
+    var delim = firstLine.indexOf('\t') >= 0 ? '\t' : (firstLine.split(';').length >= firstLine.split(',').length ? ';' : ',');
+    var rows = [], row = [], cell = '', q = false;
+    for (var i = 0; i < text.length; i++) {
+      var ch = text[i];
+      if (q) {
+        if (ch === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else q = false; }
+        else cell += ch;
+      } else if (ch === '"' && cell === '') q = true;
+      else if (ch === delim) { row.push(cell); cell = ''; }
+      else if (ch === '\n' || ch === '\r') {
+        if (ch === '\r' && text[i + 1] === '\n') i++;
+        row.push(cell); rows.push(row); row = []; cell = '';
+      } else cell += ch;
+    }
+    if (cell !== '' || row.length) { row.push(cell); rows.push(row); }
+    return rows.filter(function (r) { return r.some(function (x) { return String(x).trim(); }); });
+  }
+  function rowsToDecks(rows, fallback) {
+    if (!rows.length) return [];
+    var h = rows[0].map(function (x) { return String(x).toLowerCase().trim(); });
+    var idx = { fr: 0, de: 1, th: 2, img: 3 };
+    var isHeader = h.some(function (x) { return /franz|fran[cç]ais|deutsch|^fr$|^de$/.test(x); });
+    if (isHeader) {
+      var find = function (re, d) { for (var i = 0; i < h.length; i++) if (re.test(h[i])) return i; return d; };
+      idx = { fr: find(/franz|fran[cç]ais|^fr$/, 0), de: find(/deutsch|^de$/, 1), th: find(/thema|kapitel|unit|lektion/, -1), img: find(/bild|emoji|pikto/, -1) };
+      rows = rows.slice(1);
+    }
+    var groups = {}, order = [];
+    rows.forEach(function (r) {
+      var fr = String(r[idx.fr] || '').trim(), de = String(r[idx.de] || '').trim();
+      if (!fr || !de) return;
+      var th = idx.th >= 0 ? String(r[idx.th] || '').trim() : '';
+      var title = th || fallback || 'Neue Kartei';
+      if (!groups[title]) { groups[title] = []; order.push(title); }
+      groups[title].push({ fr: fr, de: de, img: idx.img >= 0 ? String(r[idx.img] || '').trim() : '' });
+    });
+    return order.map(function (t) { return { title: t, words: groups[t] }; });
+  }
+  function mergeDecks(newDecks) {
+    var d = draft(); var added = 0, made = 0;
+    newDecks.forEach(function (nd) {
+      var k = d.decks.filter(function (x) { return x.title.toLowerCase() === nd.title.toLowerCase(); })[0];
+      if (!k) { k = { id: 'd' + hash(nd.title + Date.now() + Math.random()), title: nd.title, words: [] }; d.decks.push(k); made++; }
+      nd.words.forEach(function (w) {
+        w.id = wid(w.fr, w.de);
+        if (!k.words.some(function (x) { return x.id === w.id; })) { k.words.push(w); added++; }
+      });
+    });
+    save();
+    return added + ' Wörter übernommen' + (made ? ', ' + made + ' neue Kartei' + (made > 1 ? 'en' : '') : '') + (MODE === 'datei' ? '. Lade am Schluss unter «App-Datei» die neue Datei herunter.' : '. Vergiss nicht, am Schluss zu veröffentlichen.');
+  }
+  // Kleiner .xlsx-Leser: .xlsx ist ein ZIP mit XML-Dateien
+  function readXlsx(buf) {
+    var u8 = new Uint8Array(buf), dv = new DataView(buf);
+    var eocd = -1;
+    for (var i = u8.length - 22; i >= Math.max(0, u8.length - 65557); i--) { if (dv.getUint32(i, true) === 0x06054b50) { eocd = i; break; } }
+    if (eocd < 0) return Promise.reject(new Error('Die Datei ist keine gültige Excel-Datei.'));
+    var n = dv.getUint16(eocd + 10, true), off = dv.getUint32(eocd + 16, true), entries = {};
+    for (var k = 0; k < n; k++) {
+      if (dv.getUint32(off, true) !== 0x02014b50) break;
+      var method = dv.getUint16(off + 10, true), csize = dv.getUint32(off + 20, true);
+      var nl = dv.getUint16(off + 28, true), el = dv.getUint16(off + 30, true), cl = dv.getUint16(off + 32, true), lho = dv.getUint32(off + 42, true);
+      var name = new TextDecoder().decode(u8.subarray(off + 46, off + 46 + nl));
+      entries[name] = { method: method, csize: csize, lho: lho };
+      off += 46 + nl + el + cl;
+    }
+    function file(name) {
+      var e = entries[name]; if (!e) return Promise.resolve(null);
+      var start = e.lho + 30 + dv.getUint16(e.lho + 26, true) + dv.getUint16(e.lho + 28, true);
+      var data = u8.subarray(start, start + e.csize);
+      if (e.method === 0) return Promise.resolve(new TextDecoder().decode(data));
+      if (typeof DecompressionStream === 'undefined') return Promise.reject(new Error('Dieser Browser kann .xlsx nicht lesen. Kopiere die Zellen und füge sie unten ein.'));
+      return new Response(new Blob([data]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).text();
+    }
+    var sheetName = entries['xl/worksheets/sheet1.xml'] ? 'xl/worksheets/sheet1.xml' : Object.keys(entries).filter(function (x) { return /^xl\/worksheets\/[^/]+\.xml$/.test(x); }).sort()[0];
+    return Promise.all([file('xl/sharedStrings.xml'), file(sheetName)]).then(function (res) {
+      var parser = new DOMParser();
+      var strings = [];
+      if (res[0]) {
+        var sdoc = parser.parseFromString(res[0], 'application/xml');
+        Array.prototype.forEach.call(sdoc.getElementsByTagName('si'), function (si) {
+          strings.push(Array.prototype.map.call(si.getElementsByTagName('t'), function (t) { return t.textContent; }).join(''));
+        });
+      }
+      if (!res[1]) throw new Error('In der Datei wurde keine Tabelle gefunden.');
+      var doc = parser.parseFromString(res[1], 'application/xml');
+      var out = [];
+      Array.prototype.forEach.call(doc.getElementsByTagName('row'), function (row) {
+        var r = [];
+        Array.prototype.forEach.call(row.getElementsByTagName('c'), function (c) {
+          var ref = c.getAttribute('r') || '', letters = (ref.match(/^[A-Z]+/) || ['A'])[0], col = 0;
+          for (var j = 0; j < letters.length; j++) col = col * 26 + (letters.charCodeAt(j) - 64);
+          var t = c.getAttribute('t'), v = c.getElementsByTagName('v')[0], val = '';
+          if (t === 's' && v) val = strings[+v.textContent] || '';
+          else if (t === 'inlineStr') val = Array.prototype.map.call(c.getElementsByTagName('t'), function (x) { return x.textContent; }).join('');
+          else if (v) val = v.textContent;
+          r[col - 1] = val;
+        });
+        for (var z = 0; z < r.length; z++) if (r[z] == null) r[z] = '';
+        if (r.some(function (x) { return String(x).trim(); })) out.push(r);
+      });
+      return out;
+    });
+  }
+
+  // ---------- Veröffentlichen ----------
+  function cap(name) {
+    try { return (window.claude && window.claude.use) ? Promise.resolve(window.claude.use(name)).catch(function () { return null; }) : Promise.resolve(null); }
+    catch (e) { return Promise.resolve(null); }
+  }
+  function checkPublish() {
+    cap('user').then(function (u) { return u ? u.canEdit() : false; }).then(function (ok) {
+      S.canPublish = !!ok;
+      if (S.view === 'teacher' && S.tab === 'teilen') render();
+    }).catch(function () { S.canPublish = false; });
+  }
+  function buildDoc(data) {
+    var css = document.getElementById('app-css').textContent;
+    var js = document.getElementById('app-js').textContent;
+    var json = JSON.stringify(data).replace(/</g, '\\u003c');
+    var end = '</' + 'script>';
+    if (MODE === 'datei') {
+      return '<!doctype html>\n<html lang="de">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">\n' +
+        '<meta name="mon-fichier-modus" content="datei">\n<link rel="apple-touch-icon" href="apple-touch-icon.png">\n<meta name="apple-mobile-web-app-capable" content="yes">\n<meta name="apple-mobile-web-app-title" content="' + TITLE + '">\n' +
+        '<title>' + TITLE + '</title>\n<style>' + RESET + '</style>\n<style id="app-css">' + css + '</style>\n</head>\n<body>\n' +
+        '<script type="application/json" id="kartei-daten">' + json + end + '\n<div id="app"></div>\n<script id="app-js">' + js + end + '\n</body>\n</html>\n';
+    }
+    return '<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>' + RESET + '</style></head><body>' +
+      '<title>' + TITLE + '</title>\n<meta name="claude:viewport-fit-sides" content="cover">\n' + FONTS + '\n<style id="app-css">' + css + '</style>\n' +
+      '<script type="application/json" id="kartei-daten">' + json + end + '\n<div id="app"></div>\n<script id="app-js">' + js + end + '\n</body></html>';
+  }
+  function cleanData(d) {
+    return { version: 1, pinHash: d.pinHash || null, classes: d.classes, decks: d.decks.map(function (k) { return { id: k.id, title: k.title, words: k.words.map(function (w) { return { id: w.id, fr: w.fr, de: w.de, img: w.img || '' }; }) }; }) };
+  }
+  function downloadFile() {
+    var html = buildDoc(cleanData(D()));
+    try {
+      var url = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
+      var a = document.createElement('a');
+      a.href = url; a.download = 'index.html';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+      S.ctx.msg = 'Die Datei «index.html» wurde heruntergeladen. Ersetze damit die alte Datei auf der Website.';
+    } catch (e) { S.ctx.msg = 'Das Herunterladen hat nicht geklappt.'; }
+    render();
+  }
+  function publish() {
+    if (!store.draft) return;
+    cap('artifact').then(function (art) {
+      if (!art) { S.ctx.msg = 'Veröffentlichen geht hier nicht. Öffne die App auf claude.ai mit dem Konto, dem sie gehört.'; render(); return; }
+      var d = store.draft;
+      var html = buildDoc(cleanData(d));
+      delete store.draft; save();
+      S.ctx.msg = 'Wird veröffentlicht …'; render();
+      art.publish(html).catch(function (e) {
+        store.draft = d; save();
+        var code = e && e.code;
+        S.ctx.msg = code === 'conflict' ? 'Jemand anderes hat gerade veröffentlicht. Die App lädt neu. Prüfe danach deine Änderungen und veröffentliche nochmals.'
+          : (code === 'not_writer' || code === 'not_granted' || code === 'capability_disabled') ? 'Du hast hier keine Berechtigung zum Veröffentlichen. Deine Änderungen bleiben auf diesem Gerät gespeichert.'
+          : code === 'rate_limited' ? 'Zu viele Veröffentlichungen kurz hintereinander. Bitte in einer Minute nochmals versuchen.'
+          : 'Das Veröffentlichen hat nicht geklappt. Deine Änderungen bleiben auf diesem Gerät gespeichert.';
+        render();
+      });
+    });
+  }
+
+  // ---------- Spielabläufe ----------
+  function kkStart() {
+    var k = findDeck(S.deck), pr = prog(k.id);
+    var due = dueWords(k, pr);
+    var pool = due.length ? due : k.words.slice();
+    pool = shuffle(pool).sort(function (a, b) { return fachOf(pr, a) - fachOf(pr, b); }).slice(0, 12);
+    if (!pool.length) return;
+    go('kk', { list: pool, i: 0, state: 'ask', right: 0 });
+  }
+  function kkAnswer(ok, result, typed) {
+    var c = S.ctx, k = findDeck(S.deck), w = c.list[c.i];
+    c.fromFach = fachOf(prog(k.id), w);
+    grade(k.id, w, ok, true);
+    if (ok) c.right++;
+    c.result = result; c.typed = typed; c.state = 'done';
+    speak(w.fr);
+    render();
+  }
+  function kkNext() {
+    var c = S.ctx;
+    if (c.i + 1 >= c.list.length) {
+      var k = findDeck(S.deck), cnt = counts(k, prog(k.id));
+      return go('result', { title: 'Geschafft!', right: c.right, total: c.list.length, text: c.right + ' von ' + c.list.length + ' Karten richtig.', again: 'kkStart', extra: boxHtml(cnt, k.words.length) });
+    }
+    c.i++; c.state = 'ask'; c.typed = ''; c.spoken = false; render();
+  }
+  function chooseStart(mode) {
+    var k = findDeck(S.deck);
+    var list = shuffle(k.words).slice(0, 10);
+    go('choose', { mode: mode, list: list, i: 0, right: 0, opts: makeOptions(k.words, list[0], 4) });
+  }
+  function memStart() {
+    var k = findDeck(S.deck);
+    var unique = [], seen = {};
+    shuffle(k.words).forEach(function (w) { if (!seen[w.de] && !seen[w.fr]) { seen[w.de] = seen[w.fr] = 1; unique.push(w); } });
+    var words = unique.slice(0, 6);
+    var cards = shuffle(words.map(function (w) { return { w: w, side: 'fr' }; }).concat(words.map(function (w) { return { w: w, side: 'de' }; })));
+    go('memory', { cards: cards, open: [], moves: 0, found: 0, pairs: words.length, busy: false });
+  }
+  function blitzNext(c) {
+    var k = findDeck(S.deck);
+    var w = c.pool[c.n % c.pool.length]; c.n++;
+    if (c.n % c.pool.length === 0) c.pool = shuffle(c.pool);
+    c.w = w; c.opts = makeOptions(k.words, w, 4); c.picked = null;
+  }
+  function blitzStart() {
+    var k = findDeck(S.deck);
+    var c = { pool: shuffle(k.words), n: 0, pts: 0, streak: 0, left: 60, t0: Date.now(), right: 0, total: 0 };
+    blitzNext(c);
+    go('blitz', c);
+  }
+  function blitzEnd() {
+    var c = S.ctx, p = P();
+    if (c.ended) return; c.ended = true;
+    store.scores.push({ game: 'blitz', deck: S.deck, klasse: p.klasse, kuerzel: p.kuerzel, pid: p.id, pts: c.pts, ts: Date.now() });
+    store.scores = store.scores.slice(-500);
+    p.best = p.best || {};
+    var bestKey = 'blitz:' + S.deck, rec = c.pts > (p.best[bestKey] || 0);
+    if (rec) p.best[bestKey] = c.pts;
+    save();
+    var hs = topScores('blitz', S.deck, p.klasse, 5);
+    go('result', { title: rec && c.pts > 0 ? 'Neuer persönlicher Rekord!' : 'Zeit ist um!', big: c.pts, right: c.right, total: c.total, text: c.right + ' von ' + c.total + ' richtig. Punkte:', again: 'blitzStart', extra: '<div style="width:100%">' + scoreTable(hs) + '</div>' });
+  }
+  function duelNewRound(c) {
+    var k = findDeck(S.deck);
+    c.w = c.list[c.round % c.list.length];
+    c.winner = null; c.reveal = false;
+    c.p.forEach(function (p) { p.locked = false; p.wrong = null; p.opts = makeOptions(k.words, c.w, 4); });
+    speak(c.w.fr);
+  }
+  function duelEnd() {
+    var c = S.ctx, a = c.p[0], b = c.p[1];
+    var text = a.score === b.score ? 'Unentschieden!' : (a.score > b.score ? a.name : b.name) + ' gewinnt!';
+    go('result', { title: text, right: Math.max(a.score, b.score), total: c.rounds, text: a.name + ' ' + a.score + ' : ' + b.score + ' ' + b.name, again: 'duelSetup' });
+  }
+
+  // ---------- Ereignisse ----------
+  var ACT = {
+    start: function () { S.me = null; go('start'); },
+    home: function () { go('home'); },
+    logout: function () { S.me = null; S.deck = null; go('start'); },
+    pickClass: function (el) { enterClass(el.dataset.code); },
+    backWho: function () { go('who', { code: S.ctx.code }); },
+    newProfile: function () { go('newKuerzel', { code: S.ctx.code }); },
+    pickProfile: function (el) {
+      var p = store.profiles[el.dataset.id];
+      if (!p.pw) go('pwSet', { code: S.ctx.code, id: p.id, step: 1, sel: [] });
+      else go('pwLogin', { code: S.ctx.code, id: p.id, sel: [] });
+    },
+    pic: function (el) {
+      var c = S.ctx, i = +el.dataset.i;
+      if (c.sel.indexOf(i) >= 0 || c.sel.length >= 3) return;
+      c.sel.push(i); c.err = '';
+      if (c.sel.length < 3) return render();
+      render();
+      later(function () { picDone(); }, 250);
+    },
+    openDeck: function (el) { S.deck = el.dataset.id || S.deck; go('deck'); },
+    pref: function (el) { P().prefs[el.dataset.k] = el.dataset.v; save(); render(); },
+    say: function (el) { speak(el.dataset.t); },
+    kkStart: kkStart,
+    accent: function (el) {
+      var i = document.getElementById('answer'); if (!i) return;
+      var s = i.selectionStart || i.value.length, e = i.selectionEnd || i.value.length;
+      i.value = i.value.slice(0, s) + el.dataset.c + i.value.slice(e);
+      i.focus(); i.setSelectionRange(s + 1, s + 1);
+      S.ctx.typed = i.value;
+    },
+    flip: function () { S.ctx.state = 'flipped'; speak(S.ctx.list[S.ctx.i].fr); render(); },
+    selfGrade: function (el) { var ok = el.dataset.ok === '1'; kkAnswer(ok, ok ? 'ok' : 'no', ''); },
+    kkNext: kkNext,
+    chooseHear: function () { chooseStart('hear'); },
+    chooseRead: function () { chooseStart('read'); },
+    choosePick: function (el) {
+      var c = S.ctx, w = c.list[c.i]; if (c.picked) return;
+      c.picked = el.dataset.id;
+      var ok = c.picked === w.id;
+      grade(S.deck, w, ok, false);
+      if (ok) c.right++;
+      if (c.mode === 'read' || !ok) speak(w.fr);
+      render();
+      later(function () {
+        if (c.i + 1 >= c.list.length) return go('result', { title: 'Fertig!', right: c.right, total: c.list.length, text: c.right + ' von ' + c.list.length + ' richtig.', again: c.mode === 'hear' ? 'chooseHear' : 'chooseRead' });
+        c.i++; c.picked = null; c.spoken = false; c.opts = makeOptions(findDeck(S.deck).words, c.list[c.i], 4); render();
+      }, ok ? 900 : 1800);
+    },
+    memStart: memStart,
+    memFlip: function (el) {
+      var c = S.ctx, i = +el.dataset.i, m = c.cards[i];
+      if (c.busy || m.done || c.open.indexOf(i) >= 0) return;
+      c.open.push(i);
+      if (m.side === 'fr') speak(m.w.fr);
+      if (c.open.length === 2) {
+        c.moves++;
+        var a = c.cards[c.open[0]], b = c.cards[c.open[1]];
+        if (a.w.id === b.w.id) {
+          a.done = b.done = true; c.open = []; c.found++;
+          if (c.found === c.pairs) {
+            var p = P(); p.best = p.best || {}; var key = 'mem:' + S.deck;
+            var rec = !p.best[key] || c.moves < p.best[key]; if (rec) p.best[key] = c.moves; save();
+            render();
+            return later(function () { go('result', { title: rec ? 'Neuer Rekord!' : 'Alle Paare gefunden!', big: c.moves, right: c.pairs, total: c.moves, text: 'Züge gebraucht. Dein Rekord: ' + p.best[key] + ' Züge.', again: 'memStart' }); }, 700);
+          }
+        } else {
+          c.busy = true;
+          later(function () { c.open = []; c.busy = false; render(); }, 1300);
+        }
+      }
+      render();
+    },
+    blitzStart: blitzStart,
+    blitzPick: function (el) {
+      var c = S.ctx; if (c.picked || c.ended) return;
+      c.picked = el.dataset.id; c.total++;
+      var ok = c.picked === c.w.id;
+      grade(S.deck, c.w, ok, false);
+      if (ok) { c.right++; c.streak++; c.pts += 10 + Math.min(10, (c.streak - 1) * 2); } else { c.streak = 0; }
+      var keepTimer = c.timer;
+      var html = VIEWS.blitz(); $app.innerHTML = layout(html); c.timer = keepTimer;
+      later(function () { if (c.ended) return; blitzNext(c); $app.innerHTML = layout(VIEWS.blitz()); }, ok ? 350 : 1100);
+    },
+    duelSetup: function () { go('duelSetup'); },
+    duelPick: function (el) {
+      var c = S.ctx, p = +el.dataset.p, st = c.p[p];
+      if (c.winner != null || st.locked || c.reveal) return;
+      if (el.dataset.id === c.w.id) {
+        c.winner = p; st.score++;
+        render();
+        later(nextDuel, 1100);
+      } else {
+        st.locked = true; st.wrong = el.dataset.id;
+        if (c.p[0].locked && c.p[1].locked) { c.reveal = true; speak(c.w.fr); render(); later(nextDuel, 1600); }
+        else render();
+      }
+    },
+    duelQuit: function () { go('deck'); },
+    // Lehrperson
+    teacherOpen: function () { go('pin'); },
+    teacherClose: function () { S.teacher = false; S.me = null; go('start'); },
+    teacherHome: function () { go('teacher'); },
+    tab: function (el) { S.tab = el.dataset.t; go('teacher'); if (S.tab === 'teilen') checkPublish(); },
+    deckEdit: function (el) {
+      var k = findDeck(el.dataset.id);
+      go('deckEdit', { id: k.id, title: k.title, rows: k.words.map(function (w) { return { fr: w.fr, de: w.de, img: w.img || '' }; }) });
+    },
+    deckNew: function () { go('deckEdit', { id: null, title: 'Neue Kartei', rows: [{ fr: '', de: '', img: '' }] }); },
+    rowAdd: function () { readRows(); S.ctx.rows.push({ fr: '', de: '', img: '' }); render(); },
+    rowDel: function (el) { readRows(); S.ctx.rows.splice(+el.dataset.i, 1); render(); },
+    deckSave: function () {
+      readRows();
+      var c = S.ctx, d = draft();
+      var words = c.rows.filter(function (r) { return r.fr.trim() && r.de.trim(); }).map(function (r) { return { id: wid(r.fr, r.de), fr: r.fr.trim(), de: r.de.trim(), img: r.img.trim() }; });
+      var k = c.id && d.decks.filter(function (x) { return x.id === c.id; })[0];
+      if (!k) { k = { id: 'd' + hash(c.title + Date.now()), title: '', words: [] }; d.decks.push(k); }
+      k.title = c.title.trim() || 'Ohne Namen'; k.words = words;
+      save(); S.tab = 'karteien'; go('teacher', { msg: 'Kartei «' + esc(k.title) + '» gespeichert (' + words.length + ' Wörter).' });
+    },
+    deckDel: function () { readRows(); S.ctx.confirmDel = true; render(); },
+    deckDelNo: function () { readRows(); S.ctx.confirmDel = false; render(); },
+    deckDelYes: function () {
+      var d = draft(); d.decks = d.decks.filter(function (x) { return x.id !== S.ctx.id; }); save(); S.tab = 'karteien'; go('teacher');
+    },
+    importPaste: function () {
+      var t = document.getElementById('paste').value, fb = document.getElementById('fallback').value;
+      if (!t.trim()) { S.ctx.msg = 'Füge zuerst Zellen aus Excel ins Feld ein.'; return render(); }
+      S.ctx.fallback = fb;
+      S.ctx.msg = esc(mergeDecks(rowsToDecks(parseDelimited(t), fb)));
+      render();
+    },
+    classDel: function (el) { S.ctx.delClass = el.dataset.code; render(); },
+    classDelYes: function (el) { var d = draft(); d.classes = d.classes.filter(function (c) { return c.code !== el.dataset.code; }); save(); go('teacher'); },
+    pwReset: function (el) { var p = store.profiles[el.dataset.id]; p.pw = null; save(); S.ctx.msg = p.kuerzel + ' wählt beim nächsten Anmelden ein neues Bild-Passwort.'; render(); },
+    profileDel: function (el) { S.ctx.delProfile = el.dataset.id; render(); },
+    profileDelYes: function (el) { delete store.profiles[el.dataset.id]; save(); S.ctx.delProfile = null; render(); },
+    copyTable: function () {
+      var deck = findDeck(S.ctx.dk || (D().decks[0] && D().decks[0].id));
+      var lines = [['Kürzel', 'Fach 1', 'Fach 2', 'Fach 3', 'Fach 4', 'Fach 5', 'Zuletzt', 'Schwierige Wörter', 'Kartei'].join('\t')];
+      (S.ctx.tableRows || []).forEach(function (r) { lines.push([r.p.kuerzel, r.c[1], r.c[2], r.c[3], r.c[4], r.c[5], fmtDate(r.p.last), r.hard.join(', '), deck ? deck.title : ''].join('\t')); });
+      var text = lines.join('\n');
+      var done = function () { S.ctx.msg = 'Tabelle kopiert. In Excel einfügen.'; render(); };
+      try { navigator.clipboard.writeText(text).then(done, function () { S.ctx.msg = 'Kopieren ging nicht. Bitte die Tabelle von Hand markieren.'; render(); }); }
+      catch (e) { S.ctx.msg = 'Kopieren ging nicht. Bitte die Tabelle von Hand markieren.'; render(); }
+    },
+    publish: publish,
+    downloadFile: downloadFile,
+    discard: function () { S.ctx.discard = true; render(); },
+    discardYes: function () { delete store.draft; save(); go('teacher', { msg: 'Änderungen verworfen.' }); }
+  };
+  function nextDuel() {
+    var c = S.ctx;
+    if (S.view !== 'duel') return;
+    c.round++;
+    if (c.round >= c.rounds) return duelEnd();
+    duelNewRound(c); render();
+  }
+  function readRows() {
+    var c = S.ctx;
+    var t = document.getElementById('dt'); if (t) c.title = t.value;
+    Array.prototype.forEach.call(document.querySelectorAll('[data-row]'), function (inp) { var r = c.rows[+inp.dataset.row]; if (r) r[inp.dataset.k] = inp.value; });
+  }
+  function enterClass(code) {
+    code = String(code || '').toUpperCase().replace(/\s+/g, '');
+    var cl = findClass(code);
+    if (!cl) return go('start', { code: code, err: code ? 'Diesen Klassencode gibt es nicht. Frag deine Lehrperson.' : 'Bitte gib den Klassencode ein.' });
+    store.recent = [cl.code].concat(store.recent.filter(function (c) { return c !== cl.code; })).slice(0, 4); save();
+    go('who', { code: cl.code });
+  }
+  function picDone() {
+    var c = S.ctx;
+    if (S.view === 'pwSet') {
+      if (c.step === 1) { c.first = c.sel.slice(); c.step = 2; c.sel = []; return render(); }
+      if (c.first.join() !== c.sel.join()) { c.step = 1; c.sel = []; c.first = null; c.err = 'Das war nicht gleich. Bitte nochmals von vorne.'; return render(); }
+      var p;
+      if (c.id) p = store.profiles[c.id];
+      else { p = { id: 'p' + hash(c.code + c.kuerzel + Date.now() + Math.random()), klasse: c.code, kuerzel: c.kuerzel, created: Date.now() }; store.profiles[p.id] = p; }
+      p.pw = c.first; p.prefs = p.prefs || { dir: 'see', ans: 'write' }; save();
+      S.me = p.id; return go('home');
+    }
+    if (S.view === 'pwLogin') {
+      var pr = store.profiles[c.id];
+      if (pr.pw && pr.pw.join() === c.sel.join()) { S.me = pr.id; pr.prefs = pr.prefs || { dir: 'see', ans: 'write' }; return go('home'); }
+      c.sel = []; c.err = 'Das stimmt leider nicht. Versuch es nochmals.';
+      render();
+      var g = document.getElementById('pics'); if (g) g.classList.add('shake');
+    }
+  }
+
+  document.addEventListener('click', function (e) {
+    var el = e.target.closest('[data-act]');
+    if (!el || el.disabled) return;
+    var fn = ACT[el.dataset.act];
+    if (fn) { e.preventDefault(); fn(el); }
+  });
+  document.addEventListener('input', function (e) {
+    if (e.target.id === 'answer') S.ctx.typed = e.target.value;
+  });
+  document.addEventListener('change', function (e) {
+    var t = e.target;
+    if (t.dataset.change === 'ovCls') { S.ctx.cls = t.value; S.ctx.delProfile = null; render(); }
+    if (t.dataset.change === 'ovDeck') { S.ctx.dk = t.value; render(); }
+    if (t.id === 'file' && t.files && t.files[0]) {
+      var f = t.files[0], fb = (document.getElementById('fallback') || {}).value || f.name.replace(/\.[^.]+$/, '');
+      S.ctx.fallback = fb;
+      var p = /\.xlsx$/i.test(f.name) ? f.arrayBuffer().then(readXlsx) : f.text().then(parseDelimited);
+      p.then(function (rows) { S.ctx.msg = esc(mergeDecks(rowsToDecks(rows, fb))); render(); })
+        .catch(function (err) { S.ctx.msg = esc(err && err.message ? err.message : 'Die Datei konnte nicht gelesen werden.'); render(); });
+    }
+  });
+  document.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var f = e.target, kind = f.dataset.form, val = function (n) { return f.elements[n] ? f.elements[n].value : ''; };
+    if (kind === 'code') return enterClass(val('code'));
+    if (kind === 'kuerzel') {
+      var kz = val('kz').toUpperCase().replace(/[^A-ZÄÖÜ0-9]/g, '');
+      if (kz.length < 2) return go('newKuerzel', { code: S.ctx.code, err: 'Bitte mindestens 2 Buchstaben.' });
+      var taken = Object.keys(store.profiles).some(function (k) { var p = store.profiles[k]; return p.klasse === S.ctx.code && p.kuerzel === kz; });
+      if (taken) return go('newKuerzel', { code: S.ctx.code, err: 'Dieses Kürzel gibt es in deiner Klasse auf diesem iPad schon. Tippe es in der Liste an.' });
+      return go('pwSet', { code: S.ctx.code, kuerzel: kz, step: 1, sel: [] });
+    }
+    if (kind === 'answer') {
+      var w = S.ctx.list[S.ctx.i], typed = val('answer'), r = check(typed, w.fr);
+      if (!typed.trim()) return;
+      return kkAnswer(r !== 'no', r, typed);
+    }
+    if (kind === 'duel') {
+      var k = findDeck(S.deck);
+      var c = { rounds: +val('rounds') || 10, round: 0, list: shuffle(k.words), p: [{ name: P().kuerzel, score: 0 }, { name: (val('p2') || 'Gast').toUpperCase(), score: 0 }] };
+      while (c.list.length < c.rounds) c.list = c.list.concat(shuffle(k.words));
+      duelNewRound(c);
+      return go('duel', c);
+    }
+    if (kind === 'pin') {
+      var pin = val('pin');
+      if (!D().pinHash) {
+        if (!/^\d{4,}$/.test(pin)) return go('pin', { err: 'Die PIN braucht mindestens 4 Ziffern.' });
+        if (pin !== val('pin2')) return go('pin', { err: 'Die beiden PINs sind nicht gleich.' });
+        return sha(pin).then(function (h) { draft().pinHash = h; save(); S.teacher = true; S.me = null; S.tab = 'karteien'; go('teacher'); });
+      }
+      return sha(pin).then(function (h) {
+        if (h === D().pinHash) { S.teacher = true; S.me = null; S.tab = 'karteien'; go('teacher'); }
+        else go('pin', { err: 'Falsche PIN.' });
+      });
+    }
+    if (kind === 'classAdd') {
+      var code = val('cc').toUpperCase().replace(/\s+/g, ''), name = val('cn').trim();
+      if (!/^[A-Z0-9ÄÖÜ-]{2,12}$/.test(code)) return go('teacher', { err: 'Der Code braucht 2 bis 12 Buchstaben oder Ziffern, ohne Leerzeichen.' });
+      if (findClass(code)) return go('teacher', { err: 'Diesen Code gibt es schon.' });
+      draft().classes.push({ code: code, name: name || code }); save();
+      return go('teacher');
+    }
+    if (kind === 'pinChange') {
+      var np = val('np');
+      if (!/^\d{4,}$/.test(np)) return go('teacher', { msg: 'Die PIN braucht mindestens 4 Ziffern.' });
+      return sha(np).then(function (h) { draft().pinHash = h; save(); go('teacher', { msg: 'PIN geändert. Sie gilt auf allen Geräten, sobald die neue Version online ist.' }); });
+    }
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
