@@ -201,6 +201,9 @@ textarea.input { min-height: 160px; font-size: 1rem; font-family: ui-monospace, 
 .feedback .sol { font-family: var(--font-display); font-size: 1.6rem; font-weight: 800; color: var(--ink); }
 .progress { height: 10px; border-radius: 999px; background: var(--blue-soft); overflow: hidden; }
 .progress i { display: block; height: 100%; background: var(--blue); border-radius: 999px; transition: width .3s; }
+.progress.stacked { display: flex; height: 14px; }
+.progress.stacked i { border-radius: 0; }
+.progress.stacked i.c1 { background: var(--f1); } .progress.stacked i.c2 { background: var(--f2); } .progress.stacked i.c3 { background: var(--f3); } .progress.stacked i.c4 { background: var(--f4); } .progress.stacked i.c5 { background: var(--f5); }
 
 .opts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; width: 100%; }
 .opt { min-height: 84px; border-radius: 16px; border: 2px solid var(--border); background: var(--sheet); padding: 8px; display: grid; gap: 2px; place-items: center; font-weight: 700; font-size: 1.1rem; }
@@ -520,9 +523,15 @@ textarea.input { min-height: 160px; font-size: 1rem; font-family: ui-monospace, 
     return '<section class="sheet pop"><h1>Bonjour ' + esc(p.kuerzel) + ' !</h1><p class="muted">Welche Kartei möchtest du üben?</p>' +
       (decks.length ? '<div class="grid-tiles">' + decks.map(function (k) {
         var pr = prog(k.id); var c = counts(k, pr); var n = k.words.length; var due = dueWords(k, pr).length;
-        var pct = n ? Math.round(c[5] / n * 100) : 0;
+        // Fach 1 zählt nur, wenn die Karte schon geübt wurde; ungeübte Karten bleiben leer
+        var tried1 = k.words.filter(function (w) { return pr[w.id] && fachOf(pr, w) === 1; }).length;
+        var parts = [[5, c[5]], [4, c[4]], [3, c[3]], [2, c[2]], [1, tried1]];
+        var practiced = n - c[1] + tried1;
+        var label = practiced ? practiced + ' von ' + n + ' geübt, ' + c[5] + ' in Fach 5' : 'Noch nicht geübt';
         return '<button class="tile" data-act="openDeck" data-id="' + esc(k.id) + '"><b>' + esc(k.title) + '</b><span>' + n + ' Wörter · ' + due + ' heute dran</span>' +
-          '<div class="progress" aria-label="' + pct + ' Prozent in Fach 5"><i style="width:' + pct + '%"></i></div></button>';
+          '<div class="progress stacked" role="img" aria-label="' + label + '">' + parts.map(function (x) {
+            return x[1] ? '<i class="c' + x[0] + '" style="width:' + (x[1] / n * 100) + '%"></i>' : '';
+          }).join('') + '</div><span class="small">' + label + '</span></button>';
       }).join('') + '</div>' : '<p class="note">Es gibt noch keine Karteien. Deine Lehrperson muss zuerst Wörter erfassen.</p>') +
       '</section>';
   };
