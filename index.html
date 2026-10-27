@@ -238,6 +238,17 @@ textarea.input { min-height: 160px; font-size: 1rem; font-family: ui-monospace, 
 .x { width: 40px; height: 40px; border-radius: 10px; border: 2px solid var(--border); background: var(--paper); color: var(--bad); font-weight: 700; }
 .badge { font-size: .78rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--warn-soft); color: var(--warn); }
 .badge.pub { background: var(--good-soft); color: var(--good); }
+.kids { display: grid; gap: 10px; }
+.kid { border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px 16px; align-items: center; background: var(--sheet); }
+.kid-main { display: grid; gap: 8px; min-width: 0; }
+.kid-head { display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; }
+.kid-k { font-family: var(--font-display); font-weight: 800; font-size: 1.4rem; color: var(--blue); }
+.fcounts { display: flex; gap: 6px; flex-wrap: wrap; }
+.fc { display: inline-flex; gap: 5px; align-items: center; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--border); font-size: .85rem; font-variant-numeric: tabular-nums; }
+.fc i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.kid-actions { display: flex; flex-direction: column; gap: 6px; align-items: stretch; }
+.kid-actions .badge { align-self: center; text-align: center; }
+@media (max-width: 640px) { .kid { grid-template-columns: minmax(0, 1fr); } .kid-actions { flex-direction: row; flex-wrap: wrap; align-items: center; } }
 
 /* Duell: geteilter Bildschirm, obere Hälfte gedreht */
 .duel { position: fixed; inset: 0; z-index: 20; background: var(--paper); display: grid; grid-template-rows: 1fr auto 1fr; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
@@ -782,15 +793,24 @@ textarea.input { min-height: 160px; font-size: 1rem; font-family: ui-monospace, 
       '<p class="note">Der Fortschritt wird nur auf dem Gerät gespeichert, auf dem geübt wurde. Du siehst hier die Kinder, die auf <b>diesem</b> iPad üben.</p>' +
       '<div class="row"><div class="field" style="flex:1;min-width:160px"><label for="ovCls">Klasse</label>' + sel('ovCls', d.classes.map(function (c) { return [c.code, c.code + ' · ' + c.name]; }), cl) + '</div>' +
       '<div class="field" style="flex:2;min-width:200px"><label for="ovDeck">Kartei</label>' + sel('ovDeck', d.decks.map(function (k) { return [k.id, k.title]; }), dk) + '</div></div>' +
-      (rows.length ? '<div class="scroll"><table class="hs"><thead><tr><th>Kürzel</th><th>F1</th><th>F2</th><th>F3</th><th>F4</th><th>F5</th><th>Zuletzt</th><th>Schwierige Wörter</th><th></th></tr></thead><tbody>' +
+      (rows.length ? '<div class="kids">' +
         rows.map(function (r) {
           var confirm = S.ctx.delProfile === r.p.id;
-          return '<tr><td><b>' + esc(r.p.kuerzel) + '</b></td>' + [1, 2, 3, 4, 5].map(function (f) { return '<td class="r">' + r.c[f] + '</td>'; }).join('') +
-            '<td>' + fmtDate(r.p.last) + '</td><td>' + esc(r.hard.join(', ') || '–') + '</td><td class="r" style="white-space:nowrap">' +
-            (confirm ? '<button class="btn bad small" data-act="profileDelYes" data-id="' + esc(r.p.id) + '">Wirklich löschen</button> <button class="link" data-act="tab" data-t="uebersicht">Nein</button>'
-              : '<button class="btn soft small" data-act="pwReset" data-id="' + esc(r.p.id) + '">' + (r.p.pw ? 'Bild-Passwort zurücksetzen' : 'Passwort ist zurückgesetzt') + '</button> <button class="btn ghost small" data-act="profileDel" data-id="' + esc(r.p.id) + '">Löschen</button>') +
-            '</td></tr>';
-        }).join('') + '</tbody></table></div><button class="btn soft" data-act="copyTable">Tabelle kopieren (für Excel)</button>'
+          var n = deck ? deck.words.length : 0;
+          var pr = deck ? prog(deck.id, r.p) : {};
+          var tried1 = deck ? deck.words.filter(function (w) { return pr[w.id] && fachOf(pr, w) === 1; }).length : 0;
+          var bar = n ? '<div class="progress stacked" role="img" aria-label="Verteilung auf die Fächer">' + [[5, r.c[5]], [4, r.c[4]], [3, r.c[3]], [2, r.c[2]], [1, tried1]].map(function (x) {
+            return x[1] ? '<i class="c' + x[0] + '" style="width:' + (x[1] / n * 100) + '%"></i>' : '';
+          }).join('') + '</div>' : '';
+          return '<div class="kid"><div class="kid-main"><div class="kid-head"><span class="kid-k">' + esc(r.p.kuerzel) + '</span><span class="muted small">zuletzt geübt: ' + fmtDate(r.p.last) + '</span></div>' +
+            '<div class="fcounts">' + [1, 2, 3, 4, 5].map(function (f) { return '<span class="fc"><i class="c' + f + '"></i>Fach ' + f + ': <b>' + r.c[f] + '</b></span>'; }).join('') + '</div>' + bar +
+            '<p class="small"><span class="muted">Schwierige Wörter:</span> ' + esc(r.hard.join(', ') || 'keine') + '</p></div>' +
+            '<div class="kid-actions">' +
+            (confirm ? '<button class="btn bad small" data-act="profileDelYes" data-id="' + esc(r.p.id) + '">Wirklich löschen</button><button class="btn ghost small" data-act="tab" data-t="uebersicht">Abbrechen</button>'
+              : (r.p.pw ? '<button class="btn soft small" data-act="pwReset" data-id="' + esc(r.p.id) + '">Passwort zurücksetzen</button>' : '<span class="badge">Passwort zurückgesetzt</span>') +
+                '<button class="btn ghost small" data-act="profileDel" data-id="' + esc(r.p.id) + '">Löschen</button>') +
+            '</div></div>';
+        }).join('') + '</div>'+ '<button class="btn soft" style="justify-self:start" data-act="copyTable">Tabelle kopieren (für Excel)</button>'
         : '<p class="muted">Auf diesem iPad hat in dieser Klasse noch niemand geübt.</p>') +
       (S.ctx.msg ? '<p class="note">' + esc(S.ctx.msg) + '</p>' : '') + '</section>';
   };
