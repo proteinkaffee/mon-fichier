@@ -435,7 +435,10 @@ textarea.input { min-height: 160px; font-size: 1rem; font-family: ui-monospace, 
     if (!('speechSynthesis' in window) || !text) return;
     try {
       speechSynthesis.cancel();
-      var u = new SpeechSynthesisUtterance(first(text).replace(/\([^)]*\)/g, ' ').replace(/\//g, ', ').replace(/\.\.\.|…/g, ', '));
+      // Alle richtigen Antworten vorlesen, verbunden mit «ou»
+      var said = alts(text).map(function (x) { return x.replace(/\([^)]*\)/g, ' ').replace(/\//g, ', ').replace(/\.\.\.|…/g, ' ').replace(/\s+/g, ' ').replace(/[\s,]+$/, '').trim(); })
+        .filter(function (x, i, all) { return x && all.indexOf(x) === i; }).join(' ; ou ');
+      var u = new SpeechSynthesisUtterance(said);
       u.lang = frVoice ? frVoice.lang : 'fr-FR';
       if (frVoice) u.voice = frVoice;
       u.rate = 0.85;
