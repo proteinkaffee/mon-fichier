@@ -396,6 +396,25 @@ textarea.input { min-height: 160px; font-size: 1rem; font-family: ui-monospace, 
     var d = new Date(ts);
     return d.getDate() + '.' + (d.getMonth() + 1) + '.' + d.getFullYear();
   }
+  // Passwort: PBKDF2 mit Salz und vielen Durchgängen, damit Ausprobieren lange dauert
+  var PW_ITER = 300000;
+  function hexOf(buf) { return Array.prototype.map.call(new Uint8Array(buf), function (x) { return ('0' + x.toString(16)).slice(-2); }).join(''); }
+  function derive(pw, saltHex, iter) {
+    var salt = new Uint8Array(saltHex.match(/../g).map(function (h) { return parseInt(h, 16); }));
+    return crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveBits']).then(function (key) {
+      return crypto.subtle.deriveBits({ name: 'PBKDF2', salt: salt, iterations: iter, hash: 'SHA-256' }, key, 256);
+    }).then(hexOf);
+  }
+  function makePwHash(pw) {
+    var salt = hexOf(crypto.getRandomValues(new Uint8Array(16)));
+    return derive(pw, salt, PW_ITER).then(function (h) { return 'pbkdf2$' + PW_ITER + '$' + salt + '$' + h; });
+  }
+  function verifyPw(pw, stored) {
+    if (!stored) return Promise.resolve(false);
+    var m = /^pbkdf2\$(\d+)\$([0-9a-f]+)\$([0-9a-f]+)$/.exec(stored);
+    if (m) return derive(pw, m[2], +m[1]).then(function (h) { return h === m[3]; });
+    return sha(pw).then(function (h) { return h === stored; });
+  }
   function sha(text) {
     if (!(window.crypto && crypto.subtle)) return Promise.resolve('p' + hash('mf|' + text));
     return crypto.subtle.digest('SHA-256', new TextEncoder().encode('mon-fichier|' + text)).then(function (buf) {
@@ -755,12 +774,12 @@ textarea.input { min-height: 160px; font-size: 1rem; font-family: ui-monospace, 
   VIEWS.pin = function () {
     var hasPin = !!D().pinHash;
     after = function () { var i = document.getElementById('pin'); if (i) i.focus(); };
-    return '<section class="sheet center pop"><h2>' + (hasPin ? 'Lehrpersonen-PIN' : 'PIN festlegen') + '</h2>' +
-      '<p class="muted">' + (hasPin ? 'Gib die PIN ein, um Karteien, Klassen und die Übersicht zu öffnen.' : 'Lege eine PIN mit mindestens 4 Ziffern fest. Sie gilt für alle Lehrpersonen dieser App.') + '</p>' +
-      '<form class="stack" style="width:min(100%,320px)" data-form="pin"><input class="input big" id="pin" name="pin" type="password" inputmode="numeric" autocomplete="off" placeholder="PIN">' +
-      (hasPin ? '' : '<input class="input big" name="pin2" type="password" inputmode="numeric" autocomplete="off" placeholder="PIN wiederholen">') +
+    return '<section class="sheet center pop"><h2>' + (hasPin ? 'Lehrpersonen-Passwort' : 'Passwort festlegen') + '</h2>' +
+      '<p class="muted">' + (hasPin ? 'Gib das Passwort ein, um Karteien, Klassen und die Übersicht zu öffnen.' : 'Lege ein Passwort mit mindestens 10 Zeichen fest. Es gilt für alle Lehrpersonen dieser App.') + '</p>' +
+      '<form class="stack" style="width:min(100%,360px)" data-form="pin"><input class="input" id="pin" name="pin" type="password" autocomplete="current-password" autocapitalize="off" spellcheck="false" placeholder="Passwort">' +
+      (hasPin ? '' : '<input class="input" name="pin2" type="password" autocomplete="new-password" autocapitalize="off" placeholder="Passwort wiederholen">') +
       (S.ctx.err ? '<p class="err">' + esc(S.ctx.err) + '</p>' : '') +
-      '<button class="btn wide" type="submit">' + (hasPin ? 'Öffnen' : 'PIN speichern') + '</button></form><button class="link" data-act="start">Zurück</button></section>';
+      '<button class="btn wide" type="submit">' + (hasPin ? 'Öffnen' : 'Passwort speichern') + '</button></form><button class="link" data-act="start">Zurück</button></section>';
   };
 
   function teacherTabs() {
@@ -847,11 +866,17 @@ textarea.input { min-height: 160px; font-size: 1rem; font-family: ui-monospace, 
   };
   TEACHER.teilen = function () {
     var can = S.canPublish;
-    var pinForm = '<section class="sheet"><h2>PIN ändern</h2><form class="row" data-form="pinChange" style="align-items:end"><div class="field" style="flex:1;min-width:160px"><label for="np">Neue PIN</label><input class="input" id="np" name="np" type="password" inputmode="numeric" autocomplete="off"></div><button class="btn soft" type="submit">Ändern</button></form>' +
-      '<p class="muted small">Die PIN schützt vor neugierigen Kindern, ist aber keine sichere Verschlüsselung.</p></section>';
+    var pinForm = '<section class="sheet"><h2>Passwort ändern</h2><p class="muted">Mindestens 10 Zeichen. Gut merken lassen sich zum Beispiel drei Wörter mit einer Zahl.</p>' +
+      '<form class="stack" data-form="pinChange" style="max-width:420px"><div class="field"><label for="np">Neues Passwort</label><input class="input" id="np" name="np" type="password" autocomplete="new-password" autocapitalize="off" spellcheck="false"></div>' +
+      '<div class="field"><label for="np2">Neues Passwort wiederholen</label><input class="input" id="np2" name="np2" type="password" autocomplete="new-password" autocapitalize="off" spellcheck="false"></div>' +
+      '<button class="btn soft" type="submit" style="justify-self:start">Passwort ändern</button></form>' +
+      (S.ctx.pwErr ? '<p class="err">' + esc(S.ctx.pwErr) + '</p>' : '') +
+      (S.ctx.pwCode ? '<div class="note good stack"><b>Das neue Passwort gilt erst auf diesem Gerät.</b><span>Damit es auf allen Geräten gilt, schicke den folgenden Code an Claude. Der Code enthält das Passwort nicht, nur eine verschlüsselte Prüfsumme.</span>' +
+        '<code id="pwcode" style="word-break:break-all;font-size:.8rem;user-select:all">' + esc(S.ctx.pwCode) + '</code><button class="btn small" data-act="copyCode" style="justify-self:start">Code kopieren</button></div>' : '') +
+      '</section>';
     if (MODE === 'datei') {
       return '<section class="sheet"><h2>Neue App-Datei erstellen</h2>' +
-        '<p>Karteien, Klassen und die PIN stecken in der App-Datei selbst. So kommen deine Änderungen auf alle iPads:</p>' +
+        '<p>Karteien, Klassen und das Passwort stecken in der App-Datei selbst. So kommen deine Änderungen auf alle iPads:</p>' +
         '<ol class="stack" style="margin:0;padding-left:1.2em"><li>Lade hier die neue Datei herunter.</li><li>Ersetze auf der Website die alte Datei <b>index.html</b> durch die neue. Die Adresse der App muss gleich bleiben, sonst ist der Fortschritt der Kinder nicht mehr sichtbar.</li><li>Auf den iPads die Seite neu laden.</li></ol>' +
         '<p class="muted small">Der Fortschritt der Kinder ist nicht in der Datei. Er bleibt auf ihren iPads.</p>' +
         (store.draft ? '<p class="note warn">Es gibt Änderungen auf diesem Gerät, die noch nicht in der Datei auf der Website sind.</p>' : '<p class="note">Die Datei entspricht dem aktuellen Stand.</p>') +
@@ -860,14 +885,13 @@ textarea.input { min-height: 160px; font-size: 1rem; font-family: ui-monospace, 
         (S.ctx.msg ? '<p class="note">' + esc(S.ctx.msg) + '</p>' : '') + '</section>' + pinForm;
     }
     return '<section class="sheet"><h2>Für alle Geräte veröffentlichen</h2>' +
-      '<p>Karteien, Klassen und die PIN gehören zur App selbst. Erst wenn du veröffentlichst, sehen alle iPads die neuen Wörter. Der Fortschritt der Kinder bleibt dabei auf ihren iPads und wird nie mitgeschickt.</p>' +
+      '<p>Karteien, Klassen und das Passwort gehören zur App selbst. Erst wenn du veröffentlichst, sehen alle iPads die neuen Wörter. Der Fortschritt der Kinder bleibt dabei auf ihren iPads und wird nie mitgeschickt.</p>' +
       (store.draft ? '<p class="note warn">Es gibt Änderungen auf diesem Gerät, die noch nicht veröffentlicht sind.</p>' : '<p class="note">Alles ist veröffentlicht.</p>') +
       (can === false ? '<p class="note warn">Auf diesem Gerät oder mit diesem Link darfst du nicht veröffentlichen. Öffne die App mit dem Konto, dem sie gehört, oder lass dir Bearbeitungsrechte geben.</p>' : '') +
       '<div class="row"><button class="btn" data-act="publish"' + (store.draft ? '' : ' disabled') + '>Jetzt veröffentlichen</button>' +
       (store.draft ? (S.ctx.discard ? '<button class="btn bad" data-act="discardYes">Wirklich verwerfen</button>' : '<button class="btn ghost" data-act="discard">Änderungen verwerfen</button>') : '') + '</div>' +
       (S.ctx.msg ? '<p class="note">' + esc(S.ctx.msg) + '</p>' : '') + '</section>' +
-      '<section class="sheet"><h2>PIN ändern</h2><form class="row" data-form="pinChange" style="align-items:end"><div class="field" style="flex:1;min-width:160px"><label for="np">Neue PIN</label><input class="input" id="np" name="np" type="password" inputmode="numeric" autocomplete="off"></div><button class="btn soft" type="submit">Ändern</button></form>' +
-      '<p class="muted small">Die PIN schützt vor neugierigen Kindern, ist aber keine sichere Verschlüsselung.</p></section>';
+      pinForm;
   };
 
   VIEWS.deckEdit = function () {
@@ -1277,6 +1301,12 @@ textarea.input { min-height: 160px; font-size: 1rem; font-family: ui-monospace, 
       catch (e) { S.ctx.msg = 'Kopieren ging nicht. Bitte die Tabelle von Hand markieren.'; render(); }
     },
     publish: publish,
+    copyCode: function () {
+      var t = S.ctx.pwCode || '';
+      var ok = function () { S.ctx.msg = ''; var b = document.querySelector('[data-act=copyCode]'); if (b) b.textContent = 'Kopiert'; };
+      try { navigator.clipboard.writeText(t).then(ok, function () { var c = document.getElementById('pwcode'); if (c) window.getSelection().selectAllChildren(c); }); }
+      catch (e) { var c = document.getElementById('pwcode'); if (c) window.getSelection().selectAllChildren(c); }
+    },
     reloadApp: function () { try { location.reload(); } catch (e) { /* egal */ } },
     draftKeep: function () { store.draftBase = pubHash(); save(); render(); },
     draftDrop: function () { delete store.draft; delete store.draftBase; save(); go(S.view, S.ctx); },
@@ -1370,13 +1400,13 @@ textarea.input { min-height: 160px; font-size: 1rem; font-family: ui-monospace, 
     if (kind === 'pin') {
       var pin = val('pin');
       if (!D().pinHash) {
-        if (!/^\d{4,}$/.test(pin)) return go('pin', { err: 'Die PIN braucht mindestens 4 Ziffern.' });
-        if (pin !== val('pin2')) return go('pin', { err: 'Die beiden PINs sind nicht gleich.' });
-        return sha(pin).then(function (h) { draft().pinHash = h; save(); S.teacher = true; S.me = null; S.tab = 'karteien'; go('teacher'); });
+        if (pin.length < 10) return go('pin', { err: 'Das Passwort braucht mindestens 10 Zeichen.' });
+        if (pin !== val('pin2')) return go('pin', { err: 'Die beiden Passwörter sind nicht gleich.' });
+        return makePwHash(pin).then(function (h) { draft().pinHash = h; save(); S.teacher = true; S.me = null; S.tab = 'karteien'; go('teacher'); });
       }
-      return sha(pin).then(function (h) {
-        if (h === D().pinHash) { S.teacher = true; S.me = null; S.tab = 'karteien'; go('teacher'); }
-        else go('pin', { err: 'Falsche PIN.' });
+      return verifyPw(pin, D().pinHash).then(function (ok) {
+        if (ok) { S.teacher = true; S.me = null; S.tab = 'karteien'; go('teacher'); }
+        else go('pin', { err: 'Falsches Passwort.' });
       });
     }
     if (kind === 'classAdd') {
@@ -1388,8 +1418,9 @@ textarea.input { min-height: 160px; font-size: 1rem; font-family: ui-monospace, 
     }
     if (kind === 'pinChange') {
       var np = val('np');
-      if (!/^\d{4,}$/.test(np)) return go('teacher', { msg: 'Die PIN braucht mindestens 4 Ziffern.' });
-      return sha(np).then(function (h) { draft().pinHash = h; save(); go('teacher', { msg: 'PIN geändert. Sie gilt auf allen Geräten, sobald die neue Version online ist.' }); });
+      if (np.length < 10) return go('teacher', { pwErr: 'Das Passwort braucht mindestens 10 Zeichen.' });
+      if (np !== val('np2')) return go('teacher', { pwErr: 'Die beiden Passwörter sind nicht gleich.' });
+      return makePwHash(np).then(function (h) { draft().pinHash = h; save(); go('teacher', { pwCode: h }); });
     }
   });
 
